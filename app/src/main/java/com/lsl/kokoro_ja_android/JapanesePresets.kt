@@ -2,6 +2,7 @@ package com.lsl.kokoro_ja_android
 
 /**
  * 预设的日文句子和对应的音素
+ * 自动生成 - 由 generate_japanese_presets.py 生成
  * 
  * 临时方案：预先转换好常用句子
  * TODO: 后续集成 MeCab 实现完整的 G2P 转换
@@ -22,7 +23,7 @@ object JapanesePresets {
         ),
         JapaneseSentence(
             text = "ありがとう",
-            phonemes = "aɾiɡatoː",
+            phonemes = "aɾʲiɡatoː",
             translation = "谢谢"
         ),
         JapaneseSentence(
@@ -37,12 +38,12 @@ object JapanesePresets {
         ),
         JapaneseSentence(
             text = "こんばんは",
-            phonemes = "koɲbaɴβa",
+            phonemes = "kombaɴ βa",
             translation = "晚上好"
         ),
         JapaneseSentence(
             text = "すみません",
-            phonemes = "sɨmimaseɴ",
+            phonemes = "sɨmʲimaseɴ",
             translation = "对不起"
         ),
         JapaneseSentence(
@@ -62,9 +63,34 @@ object JapanesePresets {
         ),
         JapaneseSentence(
             text = "きれい",
-            phonemes = "kiɾeː",
+            phonemes = "kʲiɾeː",
             translation = "漂亮"
-        )
+        ),
+        JapaneseSentence(
+            text = "わかりました",
+            phonemes = "βakaɾʲi maɕita",
+            translation = "我明白了"
+        ),
+        JapaneseSentence(
+            text = "どういたしまして",
+            phonemes = "doː itaɕi maɕite",
+            translation = "不客气"
+        ),
+        JapaneseSentence(
+            text = "お元気ですか",
+            phonemes = "o ɡeŋkʲi desɨ ka",
+            translation = "你好吗"
+        ),
+        JapaneseSentence(
+            text = "大丈夫です",
+            phonemes = "daiʥoːbɯ desɨ",
+            translation = "没关系"
+        ),
+        JapaneseSentence(
+            text = "頑張って",
+            phonemes = "ɡambaʔte",
+            translation = "加油"
+        ),
     )
     
     /**
@@ -75,7 +101,7 @@ object JapanesePresets {
     }
     
     /**
-     * 获取所有日文文本列表
+     * 获取所有日文文本列表（用于 Spinner 显示）
      */
     fun getTextList(): List<String> {
         return sentences.map { "${it.text} (${it.translation})" }

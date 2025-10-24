@@ -8,3 +8,12 @@ wheels/
 
 # Virtual environments
 .venv
+
+# ONNX 模型文件（大于 100MB）
+*.onnx
+
+# 生成的音频文件
+*.wav
+
+# 锁文件
+uv.lock

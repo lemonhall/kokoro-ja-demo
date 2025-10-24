@@ -10,4 +10,6 @@ dependencies = [
     "misaki[ja]",
     "unidic-lite>=1.0.8",
     "unidic>=1.1.0",
+    "onnx>=1.19.1",
+    "onnxruntime>=1.23.2",
 ]

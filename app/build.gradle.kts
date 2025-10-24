@@ -49,10 +49,10 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     
     // ONNX Runtime for Android
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.1")
+    implementation(libs.onnxruntime.android)
     
     // 协程支持（用于异步推理）
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation(libs.kotlinx.coroutines.android)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

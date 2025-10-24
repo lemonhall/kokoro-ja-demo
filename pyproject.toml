@@ -12,4 +12,5 @@ dependencies = [
     "unidic>=1.1.0",
     "onnx>=1.19.1",
     "onnxruntime>=1.23.2",
+    "onnxconverter-common>=1.16.0",
 ]

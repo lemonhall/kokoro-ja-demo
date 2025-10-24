@@ -44,14 +44,9 @@ class KokoroEngine(private val context: Context) {
                 // 启用所有优化
                 setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
                 
-                // 使用 NNAPI (Android Neural Networks API)
-                // 这对 INT8 量化模型特别有效
-                try {
-                    addNnapi()
-                } catch (e: Exception) {
-                    // NNAPI 不可用时回退到 CPU
-                    println("NNAPI not available, using CPU")
-                }
+                // 禁用 NNAPI，使用纯 CPU（FP32 模型更兼容）
+                // NNAPI 对 FP32 的支持有限，可能导致 ConvInteger 错误
+                println("⚙️ 使用 CPU 运行（最佳兼容性）")
             }
             
             // 创建推理 session
@@ -123,8 +118,15 @@ class KokoroEngine(private val context: Context) {
             val outputs = currentSession.run(inputs)
             
             // 获取输出（第一个输出是 waveform）
-            val waveformTensor = outputs[0].value as Array<*>
-            val waveform = (waveformTensor[0] as FloatArray)
+            val waveform = when (val value = outputs[0].value) {
+                is FloatArray -> value  // 一维数组
+                is Array<*> -> {
+                    // 二维数组，取第一个
+                    @Suppress("UNCHECKED_CAST")
+                    (value as Array<FloatArray>)[0]
+                }
+                else -> throw RuntimeException("不支持的输出类型: ${value?.javaClass}")
+            }
             
             // 清理资源
             inputIdsTensor.close()

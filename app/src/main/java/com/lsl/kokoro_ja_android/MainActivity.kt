@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 statusText.text = "正在加载模型...\n这可能需要几秒钟"
-                engine.initialize("kokoro_latest_int8.onnx")
+                engine.initialize("kokoro_fp32.onnx")
                 statusText.text = "✅ 模型加载成功\n\n选择一句日文，点击合成"
                 synthesizeButton.isEnabled = true
             } catch (e: Exception) {
@@ -77,10 +77,16 @@ class MainActivity : AppCompatActivity() {
             // 推理
             val waveform = engine.synthesize(inputIds, voiceEmbedding)
             
+            // 调试信息
+            val maxVal = waveform.maxOrNull() ?: 0f
+            val minVal = waveform.minOrNull() ?: 0f
+            println("🎵 音频生成: 长度=${waveform.size}, 最大值=$maxVal, 最小值=$minVal")
+            
             statusText.text = "✅ 合成成功!\n" +
                     "日文: ${sentence.text}\n" +
                     "意思: ${sentence.translation}\n" +
                     "时长: ${String.format("%.2f", waveform.size / 24000.0)}秒\n" +
+                    "音量范围: [$minVal, $maxVal]\n" +
                     "正在播放..."
             
             // 播放音频
@@ -106,6 +112,8 @@ class MainActivity : AppCompatActivity() {
             AudioFormat.ENCODING_PCM_FLOAT
         )
         
+        println("🔊 开始播放: 采样率=$sampleRate, 缓冲=$bufferSize, 数据长度=${waveform.size}")
+        
         audioTrack = AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
@@ -121,11 +129,27 @@ class MainActivity : AppCompatActivity() {
                     .build()
             )
             .setBufferSizeInBytes(bufferSize.coerceAtLeast(waveform.size * 4))
+            .setTransferMode(AudioTrack.MODE_STATIC)  // 使用静态模式
             .build()
         
         audioTrack?.apply {
+            // 写入数据
+            val written = write(waveform, 0, waveform.size, AudioTrack.WRITE_BLOCKING)
+            println("💾 写入样本数: $written")
+            
+            // 设置音量（最大）
+            setVolume(AudioTrack.getMaxVolume())
+            
+            // 播放
             play()
-            write(waveform, 0, waveform.size, AudioTrack.WRITE_BLOCKING)
+            println("▶️ 开始播放")
+            
+            // 等待播放完成（静态模式会自动停止）
+            while (playState == AudioTrack.PLAYSTATE_PLAYING) {
+                Thread.sleep(100)
+            }
+            
+            println("⏹️ 播放完成")
             stop()
             release()
         }

@@ -20,18 +20,15 @@ object VoiceEmbeddingLoader {
         val fileName = "$voiceName.bin"
         
         context.assets.open(fileName).use { inputStream ->
-            val dis = DataInputStream(inputStream)
+            // 读取所有数据
+            val allBytes = inputStream.readBytes()
+            val byteBuffer = ByteBuffer.wrap(allBytes).order(ByteOrder.LITTLE_ENDIAN)
             
-            // 读取维度
-            val dimension = dis.readInt()
+            // 读取维度（小端序）
+            val dimension = byteBuffer.int
             require(dimension == 256) { "语音嵌入维度必须是 256，实际: $dimension" }
             
-            // 读取数据
-            val buffer = ByteArray(dimension * 4)
-            dis.readFully(buffer)
-            
-            // 转换为 FloatArray
-            val byteBuffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN)
+            // 读取 float 数据
             val embedding = FloatArray(dimension)
             for (i in 0 until dimension) {
                 embedding[i] = byteBuffer.float

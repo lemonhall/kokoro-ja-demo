@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
     
     private val engine = KokoroEngine(this)
+    private lateinit var g2pSystem: JapaneseG2PSystem
     private var audioTrack: AudioTrack? = null
     private var currentSentenceIndex = 0
     
@@ -43,8 +44,16 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 statusText.text = "正在加载模型...\n这可能需要几秒钟"
+                
+                // 并行初始化 TTS 引擎和 G2P 系统
                 engine.initialize("kokoro_fp32.onnx")
-                statusText.text = "✅ 模型加载成功\n\n选择预设句子或输入自定义文本（假名）"
+                g2pSystem = withContext(Dispatchers.Default) {
+                    JapaneseG2PSystem(this@MainActivity)
+                }
+                
+                statusText.text = "✅ 模型加载成功\n\n" +
+                        "✅ 现已支持汉字输入！\n\n" +
+                        "选择预设句子或输入自定义文本（汉字/假名均可）"
                 synthesizeButton.isEnabled = true
             } catch (e: Exception) {
                 statusText.text = "❌ 模型加载失败:\n${e.message}"
@@ -70,17 +79,25 @@ class MainActivity : AppCompatActivity() {
     
     private suspend fun synthesizeCustomText(text: String, statusText: TextView) {
         try {
-            // 检查是否只包含假名
-            if (!SimpleJapaneseG2P.isKanaOnly(text)) {
-                statusText.text = "❌ 错误: 输入包含汉字\n请只使用平假名或片假名"
-                return
+            statusText.text = "正在分词和转换...\n" +
+                    "输入: $text"
+            
+            // 使用新的 G2P 系统（支持汉字）
+            val phonemes = withContext(Dispatchers.Default) {
+                g2pSystem.textToPhonemes(text)
             }
             
-            // 转换为音素
-            val phonemes = SimpleJapaneseG2P.textToPhonemes(text)
+            // 获取分词详情（用于显示）
+            val tokenDetails = withContext(Dispatchers.Default) {
+                g2pSystem.getTokenizationDetails(text)
+            }
+            val tokensStr = tokenDetails.joinToString(" + ") { 
+                "${it.surface}[${it.actualReading}]"
+            }
             
             statusText.text = "正在合成...\n" +
                     "日文: $text\n" +
+                    "分词: $tokensStr\n" +
                     "音素: $phonemes"
             
             // 计时开始
@@ -106,23 +123,21 @@ class MainActivity : AppCompatActivity() {
             val audioDuration = waveform.size / 24000.0
             val rtf = totalTime / 1000.0 / audioDuration
             
-            println("🎵 音频生成: 长度=${waveform.size}, 最大值=$maxVal, 最小值=$minVal")
+            println("🎵 音频生成: 长度=${waveform.size}, 最大值=$maxVal, 最小値=$minVal")
             println("⏱️ 性能: 预处理=${preprocessTime}ms, 推理=${inferenceTime}ms, 总耗时=${totalTime}ms, RTF=${String.format("%.2f", rtf)}")
             
             statusText.text = "✅ 合成成功!\n" +
                     "日文: $text\n" +
-                    "音素: $phonemes\n" +
+                    "分词: $tokensStr\n" +
                     "音频: ${String.format("%.2f", audioDuration)}秒\n" +
                     "⚙️ 性能: 推理 ${inferenceTime}ms (RTF ${String.format("%.2fx", rtf)})\n" +
                     "正在播放..."
             
-            // 播放音频
             playAudio(waveform)
             
-            // 播放完成
             statusText.text = "✅ 播放完成!\n" +
                     "日文: $text\n" +
-                    "可以继续输入其他文本"
+                    "可以继续输入其他文本（支持汉字！）"
             
         } catch (e: Exception) {
             statusText.text = "❌ 合成失败:\n${e.message}"
@@ -162,7 +177,7 @@ class MainActivity : AppCompatActivity() {
             val audioDuration = waveform.size / 24000.0
             val rtf = totalTime / 1000.0 / audioDuration  // Real-Time Factor
             
-            println("🎵 音频生成: 长度=${waveform.size}, 最大值=$maxVal, 最小值=$minVal")
+            println("🎵 音频生成: 長度=${waveform.size}, 最大値=$maxVal, 最小値=$minVal")
             println("⏱️ 性能: 预处理=${preprocessTime}ms, 推理=${inferenceTime}ms, 总耗时=${totalTime}ms, RTF=${String.format("%.2f", rtf)}")
             
             statusText.text = "✅ 合成成功!\n" +

@@ -38,6 +38,17 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    
+    // 解决 Kuromoji 资源文件冲突
+    packaging {
+        resources {
+            excludes += listOf(
+                "META-INF/CONTRIBUTORS.md",
+                "META-INF/LICENSE.md",
+                "META-INF/NOTICE.md"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -53,6 +64,9 @@ dependencies {
     
     // 协程支持（用于异步推理）
     implementation(libs.kotlinx.coroutines.android)
+    
+    // Kuromoji 日语分词器（汉字→假名）
+    implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

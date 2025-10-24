@@ -44,9 +44,14 @@ class KokoroEngine(private val context: Context) {
                 // 启用所有优化
                 setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
                 
-                // 禁用 NNAPI，使用纯 CPU（FP32 模型更兼容）
-                // NNAPI 对 FP32 的支持有限，可能导致 ConvInteger 错误
-                println("⚙️ 使用 CPU 运行（最佳兼容性）")
+                // 尝试使用 NNAPI (Android Neural Networks API) 硬件加速
+                // 可调用高通 NPU/DSP/GPU 等硬件
+                try {
+                    addNnapi()
+                    println("⚡ NNAPI 硬件加速已启用")
+                } catch (e: Exception) {
+                    println("⚠️ NNAPI 不可用，使用 CPU: ${e.message}")
+                }
             }
             
             // 创建推理 session

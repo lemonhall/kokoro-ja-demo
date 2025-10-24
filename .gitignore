@@ -17,3 +17,21 @@ wheels/
 
 # 锁文件
 uv.lock
+
+# IDE 配置文件
+.idea/
+.vscode/
+*.iml
+
+# Android/Gradle 相关
+.gradle/
+build/
+*.class
+*.dex
+*.apk
+*.ap_
+*.aab
+local.properties
+
+# macOS
+.DS_Store

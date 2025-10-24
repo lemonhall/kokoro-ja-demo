@@ -35,23 +35,25 @@ for voice_name in available_voices:
         np.save(npy_file, voices_data)
         print(f"  ✅ 已保存 NumPy 格式: {npy_file}")
         
-        # 2. 保存为自定义二进制格式（只保存第一个嵌入，供 Android 使用）
-        # 提取第一个嵌入 [256]
-        first_embedding = voices_data[0, 0, :].astype(np.float32)
+        # 2. 保存为自定义二进制格式（保存完整 510 帧嵌入，供 Android 使用）
+        # 提取所有帧 [510, 256]
+        all_embeddings = voices_data[:, 0, :].astype(np.float32)  # [510, 256]
         
         bin_file = f'app/src/main/assets/{voice_name}.bin'
         with open(bin_file, 'wb') as f:
-            # 写入维度
-            f.write(struct.pack('i', 256))
-            # 写入数据
-            f.write(first_embedding.tobytes())
+            # 写入维度信息
+            f.write(struct.pack('i', 256))  # embedding_dim
+            f.write(struct.pack('i', 510))  # num_frames
+            # 写入所有帧的数据
+            f.write(all_embeddings.tobytes())
         
         file_size = os.path.getsize(bin_file) / 1024
         print(f"  ✅ 已保存二进制格式: {bin_file} ({file_size:.2f} KB)")
+        print(f"     包含 510 帧嵌入数据，支持动态帧选择")
         
         # 3. 验证数据
-        print(f"  数据范围: [{first_embedding.min():.4f}, {first_embedding.max():.4f}]")
-        print(f"  平均值: {first_embedding.mean():.4f}")
+        print(f"  数据范围: [{all_embeddings.min():.4f}, {all_embeddings.max():.4f}]")
+        print(f"  平均值: {all_embeddings.mean():.4f}")
         
     except Exception as e:
         print(f"  ❌ 失败: {e}")

@@ -87,14 +87,40 @@ def main():
     input_ids_with_special = [0, *input_ids, 0]
     print(f"   input_ids (含BOS/EOS): {input_ids_with_special}")
 
-    # 3. 加载语音嵌入
+    # 3. 加载语音嵌入 - 测试三种方式
     print(f"\n3️⃣  加载语音嵌入...")
     voices_tensor = pipeline.load_voice(voice_name)  # [510, 1, 256]
-    ref_s = voices_tensor[0, 0, :].unsqueeze(0)  # [1, 256]
-    print(f"   语音嵌入形状: {ref_s.shape}")
+    print(f"   完整语音嵌入形状: {voices_tensor.shape}")
+    
+    # 方式1: 只用第一帧（当前Android的错误做法）
+    ref_s_first = voices_tensor[0, 0, :].unsqueeze(0)  # [1, 256]
+    print(f"   方式1 - 第一帧: {ref_s_first.shape}")
+    
+    # 方式2: 用中间帧
+    ref_s_middle = voices_tensor[255, 0, :].unsqueeze(0)  # [1, 256]
+    print(f"   方式2 - 中间帧(255): {ref_s_middle.shape}")
+    
+    # 方式3: 用平均值
+    ref_s_mean = voices_tensor.mean(dim=0)  # [1, 256]
+    print(f"   方式3 - 平均值: {ref_s_mean.shape}")
+    
+    # 方式4: 动态帧选择（Pipeline 的正确做法！）
+    # Pipeline 使用: pack[len(ps)-1]
+    frame_index = len(input_ids) - 1  # 不含BOS/EOS的音素长度
+    frame_index = min(frame_index, voices_tensor.shape[0] - 1)  # 防止越界
+    ref_s_dynamic = voices_tensor[frame_index, 0, :].unsqueeze(0)  # [1, 256]
+    print(f"   方式4 - 动态帧选择(Pipeline方式): {ref_s_dynamic.shape}")
+    print(f"          音素数={len(input_ids)}, 选择帧索引={frame_index}")
+    
+    # 对比四种方式的数据差异
+    print(f"\n   数据对比:")
+    print(f"     第一帧 vs 中间帧: {torch.mean(torch.abs(ref_s_first - ref_s_middle)).item():.6f}")
+    print(f"     第一帧 vs 平均值: {torch.mean(torch.abs(ref_s_first - ref_s_mean)).item():.6f}")
+    print(f"     第一帧 vs 动态帧: {torch.mean(torch.abs(ref_s_first - ref_s_dynamic)).item():.6f}")
+    print(f"     动态帧 vs 平均值: {torch.mean(torch.abs(ref_s_dynamic - ref_s_mean)).item():.6f}")
 
-    # 4. ONNX 推理
-    print(f"\n4️⃣  ONNX 推理...")
+    # 4. ONNX 推理 - 测试三种语音嵌入
+    print(f"\n4️⃣  ONNX 推理 - 测试三种语音嵌入...")
     print(f"   加载模型: {onnx_path}")
     
     try:
@@ -112,25 +138,41 @@ def main():
             print(f"\n注意: INT8 量化在移动端（NNAPI/CoreML）上才能充分发挥优势")
         
         sys.exit(1)
-
-    inputs = {
-        'input_ids': np.array([input_ids_with_special], dtype=np.int64),
-        'ref_s': ref_s.numpy(),
-        'speed': np.array(1.0, dtype=np.float64)
-    }
-
-    outputs = session.run(None, inputs)
-    onnx_waveform = outputs[0]
-
-    print(f"   输出形状: {onnx_waveform.shape}")
-    print(f"   峰值: {np.max(np.abs(onnx_waveform)):.3f}")
-
-    # 归一化
-    if np.max(np.abs(onnx_waveform)) > 1.0:
-        onnx_waveform = onnx_waveform / np.max(np.abs(onnx_waveform)) * 0.95
-
-    sf.write('onnx_final_output.wav', onnx_waveform, 24000)
-    print(f"   ✅ 保存: onnx_final_output.wav ({len(onnx_waveform)/24000:.2f}秒)")
+    
+    # 渣备输入
+    input_ids_np = np.array([input_ids_with_special], dtype=np.int64)
+    speed_np = np.array(1.0, dtype=np.float64)
+    
+    # 测试四种语音嵌入
+    test_configs = [
+        ('first', '第一帧 (Android当前)', ref_s_first),
+        ('middle', '中间帧', ref_s_middle),
+        ('mean', '平均值', ref_s_mean),
+        ('dynamic', f'动态帧[{frame_index}] (Pipeline正确)', ref_s_dynamic),
+    ]
+    
+    for name, desc, ref_s in test_configs:
+        print(f"\n   🎤 测试 {desc}...")
+        
+        inputs = {
+            'input_ids': input_ids_np,
+            'ref_s': ref_s.numpy(),
+            'speed': speed_np
+        }
+        
+        outputs = session.run(None, inputs)
+        onnx_waveform = outputs[0]
+        
+        print(f"      输出形状: {onnx_waveform.shape}")
+        print(f"      峰值: {np.max(np.abs(onnx_waveform)):.3f}")
+        
+        # 归一化
+        if np.max(np.abs(onnx_waveform)) > 1.0:
+            onnx_waveform = onnx_waveform / np.max(np.abs(onnx_waveform)) * 0.95
+        
+        output_file = f'onnx_{name}_output.wav'
+        sf.write(output_file, onnx_waveform, 24000)
+        print(f"      ✅ 保存: {output_file} ({len(onnx_waveform)/24000:.2f}秒)")
 
     # 5. PyTorch forward_with_tokens 对比
     print(f"\n5️⃣  PyTorch forward_with_tokens 对比...")
@@ -158,10 +200,24 @@ def main():
         print(f"   ⚠️  存在差异，但可能是正常的浮点数误差")
 
     print(f"\n{'='*70}")
-    print(f"✅ 测试完成! 请播放以下文件验证:")
-    print(f"   - reference_pytorch.wav (Pipeline 完整流程)")
-    print(f"   - pytorch_forward_tokens.wav (PyTorch forward_with_tokens)")
-    print(f"   - onnx_final_output.wav (ONNX 推理)")
+    print(f"✅ 测试完成! 生成了以下音频文件:")
+    print(f"")
+    print(f"   参考音频:")
+    print(f"     - reference_pytorch.wav (Pipeline 完整流程)")
+    print(f"     - pytorch_forward_tokens.wav (PyTorch forward_with_tokens)")
+    print(f"")
+    print(f"   ONNX 输出 (四种语音嵌入方式):")
+    print(f"     - onnx_first_output.wav (第一帧 - Android当前错误做法)")
+    print(f"     - onnx_middle_output.wav (中间帧)")
+    print(f"     - onnx_mean_output.wav (平均值)")
+    print(f"     - onnx_dynamic_output.wav (动态帧[{frame_index}] - Pipeline正确做法 ⭐)")
+    print(f"")
+    print(f"   🎵 重点对比:")
+    print(f"      reference_pytorch.wav (PyTorch原版)")
+    print(f"      vs")
+    print(f"      onnx_dynamic_output.wav (ONNX动态帧)")
+    print(f"")
+    print(f"   💡 如果两者音质接近，说明动态帧选择方案正确！")
     print(f"{'='*70}")
 
 if __name__ == "__main__":

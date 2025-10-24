@@ -79,18 +79,23 @@ class KokoroEngine(private val context: Context) {
      * 文本转语音推理
      * 
      * @param inputIds 音素 token IDs (包含 BOS 和 EOS)
-     * @param voiceEmbedding 语音嵌入向量 [256]
+     * @param voiceEmbedding 语音嵌入对象（包含 510 帧）
      * @param speed 语速，默认 1.0
      * @return 音频波形数据 (Float array, 24kHz 采样率)
      */
     suspend fun synthesize(
         inputIds: LongArray,
-        voiceEmbedding: FloatArray,
+        voiceEmbedding: VoiceEmbeddingLoader.VoiceEmbedding,
         speed: Double = 1.0
     ): FloatArray = withContext(Dispatchers.Default) {
         val currentSession = session ?: throw IllegalStateException("模型未初始化，请先调用 initialize()")
         
         try {
+            // 动态帧选择: 根据音素数量选择对应帧
+            // inputIds 包含 BOS 和 EOS，所以音素数 = inputIds.size - 2
+            val phonemeLength = inputIds.size - 2
+            val selectedEmbedding = voiceEmbedding.getFrameByPhonemeLength(phonemeLength)
+            
             // 准备输入张量
             val inputIdsShape = longArrayOf(1, inputIds.size.toLong())
             val voiceShape = longArrayOf(1, 256)
@@ -104,7 +109,7 @@ class KokoroEngine(private val context: Context) {
             
             val voiceTensor = OnnxTensor.createTensor(
                 env,
-                FloatBuffer.wrap(voiceEmbedding),
+                FloatBuffer.wrap(selectedEmbedding),
                 voiceShape
             )
             

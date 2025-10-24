@@ -25,9 +25,9 @@ class KokoroEngine(private val context: Context) {
     
     /**
      * 初始化模型
-     * @param modelName assets 中的模型文件名
+     * @param modelName assets 中的模型文件名（默认使用 FP32 模型）
      */
-    suspend fun initialize(modelName: String = "kokoro_latest_int8.onnx") = withContext(Dispatchers.IO) {
+    suspend fun initialize(modelName: String = "kokoro_fp32.onnx") = withContext(Dispatchers.IO) {
         try {
             // 从 assets 复制模型到缓存目录
             val modelFile = File(context.cacheDir, modelName)

@@ -91,6 +91,11 @@ object JapanesePresets {
             phonemes = "ɡambaʔte",
             translation = "加油"
         ),
+        JapaneseSentence(
+            text = "今日はとても良い天気ですね、公園で散歩しませんか",
+            phonemes = "kʲoː βa totemo joi teŋkʲi desɨ ne koːeɴ de sampo ɕi maseɴ ka",
+            translation = "今天天气真好呀，一起去公园散步吧"
+        ),
     )
     
     /**

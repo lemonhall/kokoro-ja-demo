@@ -68,25 +68,42 @@ class MainActivity : AppCompatActivity() {
                     "意思: ${sentence.translation}\n" +
                     "音素: ${sentence.phonemes}"
             
+            // 计时开始
+            val startTime = System.currentTimeMillis()
+            
             // 转换音素为 input_ids
             val inputIds = KokoroVocabFull.phonemesToIds(sentence.phonemes)
             
             // 加载真实的语音嵌入
             val voiceEmbedding = VoiceEmbeddingLoader.load(this, "jf_nezumi")
             
-            // 推理
-            val waveform = engine.synthesize(inputIds, voiceEmbedding)
+            val preprocessTime = System.currentTimeMillis() - startTime
+            
+            // 推理（尝试不同的语速以改善音色）
+            val inferenceStart = System.currentTimeMillis()
+            val waveform = engine.synthesize(inputIds, voiceEmbedding, speed = 1.0)
+            val inferenceTime = System.currentTimeMillis() - inferenceStart
             
             // 调试信息
             val maxVal = waveform.maxOrNull() ?: 0f
             val minVal = waveform.minOrNull() ?: 0f
+            val totalTime = System.currentTimeMillis() - startTime
+            val audioDuration = waveform.size / 24000.0
+            val rtf = totalTime / 1000.0 / audioDuration  // Real-Time Factor
+            
             println("🎵 音频生成: 长度=${waveform.size}, 最大值=$maxVal, 最小值=$minVal")
+            println("⏱️ 性能: 预处理=${preprocessTime}ms, 推理=${inferenceTime}ms, 总耗时=${totalTime}ms, RTF=${String.format("%.2f", rtf)}")
             
             statusText.text = "✅ 合成成功!\n" +
                     "日文: ${sentence.text}\n" +
                     "意思: ${sentence.translation}\n" +
-                    "时长: ${String.format("%.2f", waveform.size / 24000.0)}秒\n" +
-                    "音量范围: [$minVal, $maxVal]\n" +
+                    "音频: ${String.format("%.2f", audioDuration)}秒\n" +
+                    "音量: [$minVal, $maxVal]\n" +
+                    "⚙️ 性能:\n" +
+                    "  预处理: ${preprocessTime}ms\n" +
+                    "  推理: ${inferenceTime}ms\n" +
+                    "  总耗时: ${totalTime}ms\n" +
+                    "  RTF: ${String.format("%.2fx", rtf)}\n" +
                     "正在播放..."
             
             // 播放音频

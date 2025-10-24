@@ -163,17 +163,18 @@ object SimpleJapaneseG2P {
     
     /**
      * 检查文本是否只包含假名（不含汉字）
+     * 简化版：只检查是否是汉字，其他都允许
      */
     fun isKanaOnly(text: String): Boolean {
-        val invalidChars = text.filter { char ->
-            char.toString() !in hiraganaToPhoneme.keys &&
-            char.toString() !in katakanaToPhoneme.keys &&
-            !char.isWhitespace() &&
-            char !in "、。！？，．ー ,.!?"
+        // 汉字的 Unicode 范围
+        val kanjiRanges = listOf(
+            0x4E00..0x9FFF,  // CJK Unified Ideographs
+            0x3400..0x4DBF,  // CJK Extension A
+            0x20000..0x2A6DF // CJK Extension B
+        )
+        
+        return text.none { char ->
+            kanjiRanges.any { range -> char.code in range }
         }
-        if (invalidChars.isNotEmpty()) {
-            println("⚠️ 不支持的字符: $invalidChars")
-        }
-        return invalidChars.isEmpty()
     }
 }

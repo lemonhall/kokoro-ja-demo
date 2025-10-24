@@ -5,7 +5,7 @@
 ## 环境要求
 
 - Python 3.13+
-- uv (Python 包管理工具)
+- uv (推荐的包管理器)
 
 ## 安装步骤
 
@@ -15,69 +15,85 @@
 uv sync
 ```
 
-### 2. 下载 UniDic 日文字典（重要！）
-
-这是关键步骤，缺少这一步会导致 MeCab 初始化失败：
+### 2. 下载 UniDic 日文字典（必须！）
 
 ```bash
-# 先安装 unidic 包
+# 安装 unidic 包
 uv add unidic
 
-# 下载 UniDic 字典数据（约 526MB）
+# 下载字典数据（约 526MB）
 uv run python -m unidic download
 ```
 
-## 运行
+## 快速开始
+
+### PyTorch 版本（原始演示）
 
 ```bash
+# 运行原始示例
 uv run python ja.py
+
+# 或简单示例
+uv run python example_simple.py
 ```
 
-程序会读取日文文本并生成语音文件 `0.wav`。
+### ONNX 版本（移动端部署）
+
+```bash
+# 1. 导出 ONNX 模型
+uv run python export_onnx.py
+
+# 2. 量化模型（可选）
+uv run python quantize_int8.py kokoro_latest.onnx
+
+# 3. 测试 ONNX 模型
+uv run python test_onnx.py
+```
+
+## 项目文件说明
+
+| 文件 | 说明 |
+|------|------|
+| `ja.py` | 原始 PyTorch 示例（官方演示） |
+| `example_simple.py` | 简化版使用示例 |
+| `export_onnx.py` | 导出最新 Kokoro 模型到 ONNX |
+| `quantize_int8.py` | INT8 量化工具（310MB → 109MB） |
+| `convert_fp16.py` | FP16 转换工具（310MB → 155MB） |
+| `test_onnx.py` | ONNX 模型测试脚本 |
+
+## 文档
+
+- [README.md](README.md) - 本文件
+- [导出到onnx.md](导出到onnx.md) - ONNX 导出和量化技术文档
+- [MOBILE_PORTING.md](MOBILE_PORTING.md) - 移动端移植指南
 
 ## 常见问题
 
 ### MeCab 初始化失败
 
-如果遇到以下错误：
-
+错误信息：
 ```
 RuntimeError: Failed initializing MeCab
-param.cpp(69) [ifs] no such file or directory: ...\unidic\dicdir\mecabrc
+param.cpp(69) [ifs] no such file or directory: ...mecabrc
 ```
 
-**解决方案：** 确保已经执行了 `uv run python -m unidic download` 下载字典数据。
+**解决方案：** 确保已经执行 `uv run python -m unidic download` 下载字典。
 
-### 警告信息
+### ONNX 模型太大
 
-运行时可能会看到一些警告，这些是正常的：
-
-- `WARNING: Defaulting repo_id to hexgrad/Kokoro-82M` - 默认使用 Kokoro-82M 模型
-- `UserWarning: dropout option adds dropout after all but last recurrent layer` - PyTorch 模型结构警告
-- `FutureWarning: torch.nn.utils.weight_norm is deprecated` - PyTorch API 弃用警告
-
-这些警告不影响程序正常运行。
-
-## 依赖说明
-
-项目主要依赖：
-
-- `kokoro` - TTS 语音合成引擎
-- `misaki[ja]` - 日文文本处理（包含 fugashi、cutlet 等）
-- `unidic` - 日文形态分析字典（MeCab 需要）
-- `soundfile` - 音频文件处理
+原始 ONNX 模型约 310MB，使用量化可以减小：
+- **INT8 量化**: ~109MB（推荐移动端）
+- **FP16 转换**: ~155MB
 
 ## 技术栈
 
 - **TTS 引擎**: Kokoro-82M
 - **日文分词**: MeCab + UniDic
-- **罗马音转换**: Cutlet
+- **音素转换**: Misaki (JAG2P)
+- **模型导出**: ONNX Runtime
 - **音频处理**: SoundFile
 
-## 自定义
+## 许可证
 
-修改 `ja.py` 中的参数：
-
-- `text` - 要转换的日文文本
-- `voice` - 语音类型（如 `jf_nezumi`）
-- `speed` - 语速（默认 1.0）
+- Kokoro TTS: Apache 2.0
+- 本项目：仅供学习和研究使用

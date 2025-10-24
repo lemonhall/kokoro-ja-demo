@@ -87,6 +87,9 @@ class MainActivity : AppCompatActivity() {
                 g2pSystem.textToPhonemes(text)
             }
             
+            // 📊 G2P 测试日志（用于对比）
+            println("G2P_TEST: $text -> $phonemes")
+            
             // 获取分词详情（用于显示）
             val tokenDetails = withContext(Dispatchers.Default) {
                 g2pSystem.getTokenizationDetails(text)

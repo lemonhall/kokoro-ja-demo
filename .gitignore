@@ -18,6 +18,11 @@ wheels/
 # 锁文件
 uv.lock
 
+# Android assets 中的模型
+app/src/main/assets/*.onnx
+app/src/main/assets/*.bin
+app/src/main/assets/*.npy
+
 # IDE 配置文件
 .idea/
 .vscode/

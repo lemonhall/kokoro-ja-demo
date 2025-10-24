@@ -8,13 +8,15 @@
 
 **Android 端完整运行效果**（性能 RTF 0.70x + 音质完美）：
 
-<video src="demo.mp4" controls width="100%"></video>
+[![演示视频](https://img.shields.io/badge/📺_观看演示视频-点击播放-blue?style=for-the-badge)](demo.mp4)
 
 > 💡 **演示说明**：
 > - ✅ 推理速度：比实时快 30%（RTF 0.70x）
 > - ✅ 音质表现：与 PyTorch 原版完全一致
 > - ✅ 长短句测试：短句、中句、长句均表现完美
 > - 🎯 技术要点：动态帧选择 + ONNX Runtime 1.23.1 优化
+> 
+> _注：请下载 `demo.mp4` 文件查看完整演示_
 
 ---
 

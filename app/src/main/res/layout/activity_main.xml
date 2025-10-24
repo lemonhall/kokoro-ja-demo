@@ -39,7 +39,7 @@
         android:id="@+id/selectLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="选择日文句子:"
+        android:text="选择预设句子:"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/statusText"
         app:layout_constraintStart_toStartOf="parent"
@@ -55,13 +55,36 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
 
+    <TextView
+        android:id="@+id/customLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="或输入自定义文本（只支持假名）:"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/sentenceSpinner"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <EditText
+        android:id="@+id/customTextInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="例: こんにちは、今日は良い天気ですね"
+        android:minHeight="48dp"
+        android:maxLines="3"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/customLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
     <Button
         android:id="@+id/synthesizeButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="合成语音"
         android:enabled="false"
-        app:layout_constraintTop_toBottomOf="@id/sentenceSpinner"
+        app:layout_constraintTop_toBottomOf="@id/customTextInput"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp"/>
@@ -70,7 +93,7 @@
         android:id="@+id/hintText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="💡 提示: 当前使用预设句子\n后续将支持输入任意日文文本"
+        android:text="⚠️ 注意: 自定义文本只支持假名，汉字会被忽略\n推荐使用预设句子获得最佳效果"
         android:textSize="12sp"
         android:textColor="#666666"
         android:gravity="center"

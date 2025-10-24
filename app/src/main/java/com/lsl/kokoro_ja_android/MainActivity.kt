@@ -6,6 +6,7 @@ import android.media.AudioTrack
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         
         val statusText = findViewById<TextView>(R.id.statusText)
         val sentenceSpinner = findViewById<Spinner>(R.id.sentenceSpinner)
+        val customTextInput = findViewById<EditText>(R.id.customTextInput)
         val synthesizeButton = findViewById<Button>(R.id.synthesizeButton)
         
         // 设置日文句子选择器
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 statusText.text = "正在加载模型...\n这可能需要几秒钟"
                 engine.initialize("kokoro_fp32.onnx")
-                statusText.text = "✅ 模型加载成功\n\n选择一句日文，点击合成"
+                statusText.text = "✅ 模型加载成功\n\n选择预设句子或输入自定义文本（假名）"
                 synthesizeButton.isEnabled = true
             } catch (e: Exception) {
                 statusText.text = "❌ 模型加载失败:\n${e.message}"
@@ -52,13 +54,82 @@ class MainActivity : AppCompatActivity() {
         
         // 合成按钮
         synthesizeButton.setOnClickListener {
-            currentSentenceIndex = sentenceSpinner.selectedItemPosition
             lifecycleScope.launch {
-                synthesizeSentence(currentSentenceIndex, statusText)
+                val customText = customTextInput.text.toString().trim()
+                if (customText.isNotEmpty()) {
+                    // 使用自定义文本
+                    synthesizeCustomText(customText, statusText)
+                } else {
+                    // 使用预设句子
+                    currentSentenceIndex = sentenceSpinner.selectedItemPosition
+                    synthesizeSentence(currentSentenceIndex, statusText)
+                }
             }
         }
     }
     
+    private suspend fun synthesizeCustomText(text: String, statusText: TextView) {
+        try {
+            // 检查是否只包含假名
+            if (!SimpleJapaneseG2P.isKanaOnly(text)) {
+                statusText.text = "❌ 错误: 输入包含汉字\n请只使用平假名或片假名"
+                return
+            }
+            
+            // 转换为音素
+            val phonemes = SimpleJapaneseG2P.textToPhonemes(text)
+            
+            statusText.text = "正在合成...\n" +
+                    "日文: $text\n" +
+                    "音素: $phonemes"
+            
+            // 计时开始
+            val startTime = System.currentTimeMillis()
+            
+            // 转换音素为 input_ids
+            val inputIds = KokoroVocabFull.phonemesToIds(phonemes)
+            
+            // 加载真实的语音嵌入
+            val voiceEmbedding = VoiceEmbeddingLoader.load(this, "jf_nezumi")
+            
+            val preprocessTime = System.currentTimeMillis() - startTime
+            
+            // 推理
+            val inferenceStart = System.currentTimeMillis()
+            val waveform = engine.synthesize(inputIds, voiceEmbedding, speed = 1.0)
+            val inferenceTime = System.currentTimeMillis() - inferenceStart
+            
+            // 调试信息
+            val maxVal = waveform.maxOrNull() ?: 0f
+            val minVal = waveform.minOrNull() ?: 0f
+            val totalTime = System.currentTimeMillis() - startTime
+            val audioDuration = waveform.size / 24000.0
+            val rtf = totalTime / 1000.0 / audioDuration
+            
+            println("🎵 音频生成: 长度=${waveform.size}, 最大值=$maxVal, 最小值=$minVal")
+            println("⏱️ 性能: 预处理=${preprocessTime}ms, 推理=${inferenceTime}ms, 总耗时=${totalTime}ms, RTF=${String.format("%.2f", rtf)}")
+            
+            statusText.text = "✅ 合成成功!\n" +
+                    "日文: $text\n" +
+                    "音素: $phonemes\n" +
+                    "音频: ${String.format("%.2f", audioDuration)}秒\n" +
+                    "⚙️ 性能: 推理 ${inferenceTime}ms (RTF ${String.format("%.2fx", rtf)})\n" +
+                    "正在播放..."
+            
+            // 播放音频
+            playAudio(waveform)
+            
+            // 播放完成
+            statusText.text = "✅ 播放完成!\n" +
+                    "日文: $text\n" +
+                    "可以继续输入其他文本"
+            
+        } catch (e: Exception) {
+            statusText.text = "❌ 合成失败:\n${e.message}"
+            e.printStackTrace()
+        }
+    }
+
     private suspend fun synthesizeSentence(index: Int, statusText: TextView) {
         try {
             val sentence = JapanesePresets.sentences[index]

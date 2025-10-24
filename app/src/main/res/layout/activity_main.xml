@@ -9,27 +9,74 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/statusText"
+        android:id="@+id/titleText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="初始化中..."
-        android:textSize="16sp"
+        android:text="Kokoro TTS 日文语音合成"
+        android:textSize="20sp"
+        android:textStyle="bold"
         android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/testButton"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="16dp"/>
 
-    <Button
-        android:id="@+id/testButton"
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="初始化中..."
+        android:textSize="14sp"
+        android:gravity="start"
+        android:minHeight="100dp"
+        app:layout_constraintTop_toBottomOf="@id/titleText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/selectLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="测试语音合成"
-        android:enabled="false"
+        android:text="选择日文句子:"
+        android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/statusText"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp"/>
+
+    <Spinner
+        android:id="@+id/sentenceSpinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        app:layout_constraintTop_toBottomOf="@id/selectLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/synthesizeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="合成语音"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/sentenceSpinner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp"/>
+
+    <TextView
+        android:id="@+id/hintText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="💡 提示: 当前使用预设句子\n后续将支持输入任意日文文本"
+        android:textSize="12sp"
+        android:textColor="#666666"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

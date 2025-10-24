@@ -4,7 +4,9 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -16,42 +18,58 @@ class MainActivity : AppCompatActivity() {
     
     private val engine = KokoroEngine(this)
     private var audioTrack: AudioTrack? = null
+    private var currentSentenceIndex = 0
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         
         val statusText = findViewById<TextView>(R.id.statusText)
-        val testButton = findViewById<Button>(R.id.testButton)
+        val sentenceSpinner = findViewById<Spinner>(R.id.sentenceSpinner)
+        val synthesizeButton = findViewById<Button>(R.id.synthesizeButton)
+        
+        // 设置日文句子选择器
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            JapanesePresets.getTextList()
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        sentenceSpinner.adapter = adapter
         
         // 初始化模型
         lifecycleScope.launch {
             try {
-                statusText.text = "正在加载模型..."
+                statusText.text = "正在加载模型...\n这可能需要几秒钟"
                 engine.initialize("kokoro_latest_int8.onnx")
-                statusText.text = "✅ 模型加载成功\n点击按钮测试"
-                testButton.isEnabled = true
+                statusText.text = "✅ 模型加载成功\n\n选择一句日文，点击合成"
+                synthesizeButton.isEnabled = true
             } catch (e: Exception) {
                 statusText.text = "❌ 模型加载失败:\n${e.message}"
+                e.printStackTrace()
             }
         }
         
-        // 测试按钮
-        testButton.setOnClickListener {
+        // 合成按钮
+        synthesizeButton.setOnClickListener {
+            currentSentenceIndex = sentenceSpinner.selectedItemPosition
             lifecycleScope.launch {
-                testSynthesis(statusText)
+                synthesizeSentence(currentSentenceIndex, statusText)
             }
         }
     }
     
-    private suspend fun testSynthesis(statusText: TextView) {
+    private suspend fun synthesizeSentence(index: Int, statusText: TextView) {
         try {
-            statusText.text = "正在生成语音..."
+            val sentence = JapanesePresets.sentences[index]
             
-            // 示例: "こんにちは" 的音素和 input_ids
-            // phonemes: "koɲɲiʨiβa"
-            // input_ids: [0, 53, 57, 114, 114, 51, 21, 51, 75, 43, 0]
-            val inputIds = longArrayOf(0, 53, 57, 114, 114, 51, 21, 51, 75, 43, 0)
+            statusText.text = "正在合成...\n" +
+                    "日文: ${sentence.text}\n" +
+                    "意思: ${sentence.translation}\n" +
+                    "音素: ${sentence.phonemes}"
+            
+            // 转换音素为 input_ids
+            val inputIds = KokoroVocabFull.phonemesToIds(sentence.phonemes)
             
             // 加载真实的语音嵌入
             val voiceEmbedding = VoiceEmbeddingLoader.load(this, "jf_nezumi")
@@ -59,16 +77,23 @@ class MainActivity : AppCompatActivity() {
             // 推理
             val waveform = engine.synthesize(inputIds, voiceEmbedding)
             
-            statusText.text = "✅ 生成成功!\n" +
-                    "波形长度: ${waveform.size}\n" +
+            statusText.text = "✅ 合成成功!\n" +
+                    "日文: ${sentence.text}\n" +
+                    "意思: ${sentence.translation}\n" +
                     "时长: ${String.format("%.2f", waveform.size / 24000.0)}秒\n" +
                     "正在播放..."
             
             // 播放音频
             playAudio(waveform)
             
+            // 播放完成
+            statusText.text = "✅ 播放完成!\n" +
+                    "日文: ${sentence.text}\n" +
+                    "意思: ${sentence.translation}\n" +
+                    "可以选择其他句子继续测试"
+            
         } catch (e: Exception) {
-            statusText.text = "❌ 生成失败:\n${e.message}"
+            statusText.text = "❌ 合成失败:\n${e.message}"
             e.printStackTrace()
         }
     }

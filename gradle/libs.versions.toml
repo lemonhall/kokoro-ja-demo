@@ -9,7 +9,7 @@ appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.2"
 constraintlayout = "2.1.4"
-onnxruntime = "1.17.1"
+onnxruntime = "1.23.1"
 kotlinxCoroutines = "1.8.1"
 
 [libraries]

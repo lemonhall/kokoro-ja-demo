@@ -277,6 +277,8 @@ uv run python test_onnx.py
 | `convert_fp16.py` | FP16 转换工具 (310MB → 155MB) | ❌ 类型错误 |
 | `test_onnx.py` | ONNX 模型测试脚本 | ✅ 工作正常 |
 | `generate_japanese_presets.py` | 生成预设句子的 G2P 数据 | ✅ 工作正常 |
+| `generate_pinyin_dict.py` | 生成中文拼音字典 | ✅ 20,902 汉字 |
+| `generate_english_dict.py` | 生成英文发音字典 | ✅ 126,052 单词 |
 
 ### Android 应用
 
@@ -285,19 +287,37 @@ uv run python test_onnx.py
 | `app/src/main/java/.../MainActivity.kt` | 主界面 | ✅ 功能完整 |
 | `app/src/main/java/.../KokoroEngine.kt` | ONNX 推理引擎 | ✅ 能运行 |
 | `app/src/main/java/.../JapaneseG2PSystem.kt` | 完整 G2P 系统 (Kuromoji + OpenJTalk) | ✅ 支持汉字（82.6%准确度 |
+| `app/src/main/java/.../LanguageDetector.kt` | 语言自动检测器 | ✅ 支持中日英 |
+| `app/src/main/java/.../UnifiedG2PSystem.kt` | 统一 G2P 入口 | ✅ 混合语言处理 |
+| `app/src/main/java/.../ChineseG2PSystem.kt` | 中文 G2P 系统 | ✅ 20,902 汉字 |
+| `app/src/main/java/.../EnglishG2PSystem.kt` | 英文 G2P 系统 | ✅ 126,052 单词 |
 | `app/src/main/java/.../OpenJTalkG2P.kt` | OpenJTalk 规则移植 | ✅ 完整实现 |
 | `app/src/main/java/.../JapanesePresets.kt` | 16 个预设句子 | ✅ 自动生成 |
 | `app/src/main/java/.../VoiceEmbeddingLoader.kt` | 语音嵌入加载器（支持 510 帧） | ✅ 完整实现 |
 | `app/src/main/java/.../KokoroVocabFull.kt` | 完整词汇表 (206 个音素) | ✅ 完整 |
+| `app/src/main/assets/pinyin_dict.json` | 中文拼音字典 | ✅ 267KB |
+| `app/src/main/assets/english_dict.json` | 英文发音字典 | ✅ 3.3MB |
 | `app/src/main/assets/kokoro_fp32.onnx` | FP32 模型 (310MB) | ⚠️ 慢 |
-| `app/src/main/assets/jf_nezumi.bin` | 女声嵌入（510 帧，522KB） | ✅ 完整数据 |
+| `app/src/main/assets/jf_nezumi.bin` | 日文女声嵌入（510 帧，522KB） | ✅ 完整数据 |
+| `app/src/main/assets/zf_xiaoxiao.bin` | 中文女声嵌入（510 帧，522KB） | ✅ 完整数据 |
 
 ## 文档
 
+### 主要文档
 - [README.md](README.md) - 本文件
-- [G2P 评估报告](docs/G2P_EVALUATION.md) - 日语 G2P 系统详细评估 (准确度 82.6%)
-- [导出到onnx.md](导出到onnx.md) - ONNX 导出和量化技术文档
+- [ANDROID_BUILD_GUIDE.md](ANDROID_BUILD_GUIDE.md) - Android 构建指南
+- [ANDROID_GUIDE.md](ANDROID_GUIDE.md) - Android 开发指南
 - [MOBILE_PORTING.md](MOBILE_PORTING.md) - 移动端移植指南
+- [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) - 部署检查清单
+
+### 技术文档
+- [docs/动态帧选择机制详解.md](docs/动态帧选择机制详解.md) - 音质修复核心技术
+- [docs/导出到onnx.md](docs/导出到onnx.md) - ONNX 导出和量化技术文档
+- [docs/G2P测试指南.md](docs/G2P测试指南.md) - 日语 G2P 系统详细评估 (准确度 82.6%)
+- [docs/公众号文章.md](docs/公众号文章.md) - 技术复盘文章
+
+### 进度报告
+在 `docs/progress/` 目录下，包含各阶段的详细进度报告和技术分析。
 
 ## 常见问题
 
@@ -424,4 +444,4 @@ Error code - ORT_NOT_IMPLEMENTED - Could not find an implementation for ConvInte
   - **新版：~0.70x（比实时快 30%）** 🎉
 - NNAPI 节点支持率：7% (233/3348)
 
-**结论：** ✅ **Android 端已实现高质量实时语音合成 (RTF 0.70x + 音质完美)** 🎉
+**结论：** ✅ **Android 端已实现高质量实时多语言语音合成 (RTF 0.70x + 音质完美 + 中日英支持)** 🎉

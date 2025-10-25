@@ -51,8 +51,7 @@ class JapaneseG2PSystem(private val context: Context) {
      * - ✅ 混合输入 ("今日は good weather")
      * 
      * 优化：
-     * - 减少空格分隔，仅在动词/助词边界保留
-     * - 增强音素同化处理
+     * - 增强拨音同化处理（ん+b/p/m → m）
      * 
      * @param text 输入文本（可包含汉字、假名、标点等）
      * @return Kokoro IPA 格式的音素字符串（带空格分隔）
@@ -62,77 +61,28 @@ class JapaneseG2PSystem(private val context: Context) {
         val tokens = tokenizer.tokenize(text)
         
         // 2. 提取每个词的读音（片假名）并转换为音素
-        val phonemesList = mutableListOf<String>()
-        
-        for (i in tokens.indices) {
-            val token = tokens[i]
+        val phonemesList = tokens.mapNotNull { token ->
             val reading = getTokenReading(token)
-            
             if (reading.isEmpty()) {
-                continue
+                null
+            } else {
+                // 3. OpenJTalk G2P: 假名 → IPA
+                openJTalkG2P.kanaToPhonemes(reading)
             }
-            
-            // 3. OpenJTalk G2P: 假名 → IPA
-            val phonemes = openJTalkG2P.kanaToPhonemes(reading)
-            
-            // 4. 决定是否添加空格（仅在特定边界）
-            if (phonemesList.isNotEmpty() && shouldAddSpace(tokens.getOrNull(i - 1), token)) {
-                phonemesList.add(" ")
-            }
-            phonemesList.add(phonemes)
         }
         
-        // 5. 拼接结果
-        val result = phonemesList.joinToString("")
+        // 4. 用空格连接各个词的音素（保持与Python版本一致）
+        val result = phonemesList.joinToString(" ")
         
-        // 6. 后处理：跨词边界的同化
+        // 5. 后处理：跨词边界的同化
         return applyCrossWordAssimilation(result)
     }
     
     /**
-     * 判断是否应在两个token之间添加空格
+     * 跨词边界的音素同化
      * 
-     * 优化策略：
-     * - 助词后需要空格
-     * - 动词后需要空格  
-     * - 名词+名词不需要空格（复合词）
-     * - 其他情况默认添加
+     * 处理如 "ɲ n" → "ɲɲ" 的情况
      */
-    private fun shouldAddSpace(prevToken: Token?, currentToken: Token): Boolean {
-        if (prevToken == null) return false
-        
-        val prevPos = prevToken.partOfSpeechLevel1
-        val currentPos = currentToken.partOfSpeechLevel1
-        
-        // 规则：
-        // 1. 助词后一般不需要空格（ですね → desɯne 不分开）
-        if (prevPos == "助詞" && currentPos in listOf("助動詞", "名詞")) {
-            return false
-        }
-        
-        // 2. 助词+助词不需要空格
-        if (prevPos == "助詞" && currentPos == "助詞") {
-            return false
-        }
-        
-        // 3. 名词+名词不需要空格（复合词：东京大学 → toːkʲoːdaiɡakɯ）
-        if (prevPos == "名詞" && currentPos == "名詞") {
-            return false
-        }
-        
-        // 4. 助词后需要空格（除了上述例外）
-        if (prevPos == "助詞") {
-            return true
-        }
-        
-        // 5. 动词后需要空格
-        if (prevPos == "動詞") {
-            return true
-        }
-        
-        // 6. 其他情况默认添加空格
-        return true
-    }
     private fun applyCrossWordAssimilation(phonemes: String): String {
         var result = phonemes
         

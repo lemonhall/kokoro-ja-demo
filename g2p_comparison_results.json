@@ -17,15 +17,15 @@
     "id": 3,
     "text": "東京大学からの留学生です。",
     "python": "toːkʲoː daiɡakɯ kaɾa no ɾʲɨːɡakɯseː desɨ",
-    "kotlin": "toːkʲoːdaiɡakɯ kaɾa no ɾʲɨːɡakɯseː desɯ",
-    "similarity": 95.0
+    "kotlin": "toːkʲoːdaiɡakɯ kaɾa no ɾʲɯːɡakɯseː desɯ",
+    "similarity": 92.5
   },
   {
     "id": 4,
     "text": "彼女は日本語を勉強していますが、まだ上手ではありません。",
     "python": "kanoʥo βa ɲiʔpoŋɡo o beŋkʲoː ɕite imasɨ ɡa mada ʥoːzɨ de βa aɾʲimaseɴ",
-    "kotlin": "kanodʑo βa nihoŋɡo o beŋkʲoː ɕi te i masɯ ɡa mada dʑoːzɯ de βa aɾi mase ɴ",
-    "similarity": 80.82191780821918
+    "kotlin": "kanodʑo βa nihoŋo o beŋkʲoː ɕi te i masɯ ɡa mada dʑoːzɯ de βa aɾi mase ɴ",
+    "similarity": 79.16666666666666
   },
   {
     "id": 5,
@@ -38,8 +38,8 @@
     "id": 6,
     "text": "新聞を読んでいます。",
     "python": "ɕimbɯɴ o jonde imasɨ",
-    "kotlin": "ɕiɴbɯɴ o joɴ de i masɯ",
-    "similarity": 77.27272727272727
+    "kotlin": "ɕimbɯɴ o joɴ de i masɯ",
+    "similarity": 81.81818181818181
   },
   {
     "id": 7,
@@ -101,8 +101,8 @@
     "id": 15,
     "text": "三つのりんごを食べました。",
     "python": "mʲiʔʦɨ no ɾʲiŋɡo o tabe maɕita",
-    "kotlin": "miʔtsɯ no ɾiŋɡo o tabe maɕi ta",
-    "similarity": 80.0
+    "kotlin": "miʔtsɯ no ɾiŋo o tabe maɕi ta",
+    "similarity": 76.66666666666666
   },
   {
     "id": 16,
@@ -136,7 +136,7 @@
     "id": 20,
     "text": "コンピューターを使っています。",
     "python": "kompʲɨːtaː o ʦɨkaʔte imasɨ",
-    "kotlin": "koɴpʲɯta o tsɯkaʔ te i masɯ",
-    "similarity": 62.96296296296296
+    "kotlin": "kompʲɯta o tsɯkaʔ te i masɯ",
+    "similarity": 66.66666666666667
   }
 ]

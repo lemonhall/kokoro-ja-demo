@@ -59,7 +59,7 @@
 - **PyTorch 原生版本** - 在 PC 上完美运行，音质优秀
 - **ONNX 模型导出** - 成功将 82M 参数模型转换为 ONNX 格式
 - **Android 应用集成** - 完整的 Android TTS 应用，支持自定义文本输入
-- **简化 G2P 转换** - 基于规则的假名到音素映射，无需 MeCab
+- **完整 G2P 系统** - Kuromoji 分词 + OpenJTalk 规则，支持汉字输入 (准确度 82.6%)
 - **实时性能** - ONNX Runtime 1.23.1 实现 RTF 0.70x，满足实时要求 🎉
 - **音质修复** - 实现动态帧选择，与 PyTorch 原版音质完全一致 🎊
 
@@ -112,10 +112,19 @@
 - **NNAPI 加速**: 只支持 7% 节点 (233/3348)，但 1.23.1 版本有显著优化
 - 结论：**移动端推理速度已可用** ✅
 
-#### 3. **G2P 准确度问题** (中等)
-- 简化版 G2P 只支持假名直接映射，无法处理汉字
-- 缺少重音、特殊读音等高级功能
-- 适用场景：仅限假名输入
+#### 3. **G2P 准确度问题** (✅ 基本可用，但有提升空间)
+- **当前状态**: Kuromoji + OpenJTalk 规则移植，支持汉字输入
+- **准确度**: 82.6% (对比 Python MeCab + Misaki 基线)
+- **可懂度**: ~85% (日本人能基本听懂，但有机器感)
+- **主要问题**:
+  - 拗音分词错误：“きょう” 被拆成 “き” + “ょう”
+  - 长音丢失：“コンピューター” 变成 “コンピュタ”
+  - 软腭鼻音缺失：“りんご” 听起来像 “りんお”
+- **适用场景**: 
+  - ✅ 新闻播报、导航语音 (80%场景可用)
+  - ⚠️ 对话机器人 (需要谨慎测试)
+  - ❌ 专业配音 (韵律、重音未处理)
+- **详细评估**: 请查看 [G2P 评估报告](docs/G2P_EVALUATION.md)
 
 ### 💡 技术总结
 
@@ -211,7 +220,8 @@ uv run python test_onnx.py
 |------|------|------|
 | `app/src/main/java/.../MainActivity.kt` | 主界面 | ✅ 功能完整 |
 | `app/src/main/java/.../KokoroEngine.kt` | ONNX 推理引擎 | ✅ 能运行 |
-| `app/src/main/java/.../SimpleJapaneseG2P.kt` | 简化 G2P 转换器 | ⚠️ 只支持假名 |
+| `app/src/main/java/.../JapaneseG2PSystem.kt` | 完整 G2P 系统 (Kuromoji + OpenJTalk) | ✅ 支持汉字（82.6%准确度 |
+| `app/src/main/java/.../OpenJTalkG2P.kt` | OpenJTalk 规则移植 | ✅ 完整实现 |
 | `app/src/main/java/.../JapanesePresets.kt` | 16 个预设句子 | ✅ 自动生成 |
 | `app/src/main/java/.../VoiceEmbeddingLoader.kt` | 语音嵌入加载器（支持 510 帧） | ✅ 完整实现 |
 | `app/src/main/java/.../KokoroVocabFull.kt` | 完整词汇表 (206 个音素) | ✅ 完整 |
@@ -221,6 +231,7 @@ uv run python test_onnx.py
 ## 文档
 
 - [README.md](README.md) - 本文件
+- [G2P 评估报告](docs/G2P_EVALUATION.md) - 日语 G2P 系统详细评估 (准确度 82.6%)
 - [导出到onnx.md](导出到onnx.md) - ONNX 导出和量化技术文档
 - [MOBILE_PORTING.md](MOBILE_PORTING.md) - 移动端移植指南
 

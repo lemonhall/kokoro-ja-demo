@@ -300,14 +300,14 @@ object OpenJTalkG2P {
         "cl" to "ʔ",     // 促音 (声门塞音)
         "ng" to "ŋ",     // 软腭鼻音 (k/g 前的拨音)
         
-        // 拗音 (腭化) - 优化：减少不必要的腭化标记
+        // 拗音 (腭化)
         "ky" to "kʲ",
         "gy" to "ɡʲ",
         "ny" to "ɲ",     // 腭化鼻音 (n/t/d/z/s 前的拨音)
-        "hy" to "h",     // ひゃ → ha (Python版本不使用ç)
-        "by" to "b",     // びゃ → ba (减少腭化标记)
-        "py" to "p",     // ぴゃ → pa
-        "my" to "m",     // みゃ → ma
+        "hy" to "hʲ",    // ひゃ → hʲa (保持腭化)
+        "by" to "bʲ",    // びゃ → bʲa
+        "py" to "pʲ",    // ぴゃ → pʲa
+        "my" to "mʲ",    // みゃ → mʲa
         "ry" to "ɾʲ",    // りゃ保持腭化
         
         // 特殊辅音
@@ -492,9 +492,9 @@ object OpenJTalkG2P {
      * 拨音的上下文变化处理（增强版）
      * 
      * 规则（根据 Python 版本）：
+     * - N + b/p/m → m (双唇鼻音，如 新聞 shinbun → ɕimbɯɴ)
      * - N + n/t/d/z/s/ch/sh/j → ɲ (腭化鼻音)
      * - N + k/g → ŋ (软腭鼻音)
-     * - N + ɲ → ɲɲ (双腭化鼻音，こんにち的情况)
      * - 其他情况 → ɴ (小型大写)
      */
     private fun processMoraicNasal(phonemes: List<String>): List<String> {
@@ -509,8 +509,12 @@ object OpenJTalkG2P {
                 
                 // 检查下一个音素
                 when {
+                    // b, p, m 前 → m (关键优化！)
+                    next in listOf("b", "p", "m", "by", "py", "my") -> {
+                        result.add("m")  // 新聞 shinbun → ɕimbɯn
+                    }
                     // n, t, d, z, s, ch, sh, j, ny 前 → ɲ
-                    next in listOf("n", "t", "d", "z", "s", "ch", "sh", "j", "ny") -> {
+                    next in listOf("n", "t", "d", "z", "s", "ch", "sh", "j", "ny", "ts") -> {
                         result.add("ny")  // 使用 ny，后续会转成 ɲ
                     }
                     // k, g, ky, gy 前 → ŋ

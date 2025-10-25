@@ -27,6 +27,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_string.c
     ${MISAKI_SRC_DIR}/core/misaki_dict.c
     ${MISAKI_SRC_DIR}/core/misaki_trie.c
+    ${MISAKI_SRC_DIR}/core/misaki_viterbi.c
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 
@@ -47,6 +48,9 @@ target_link_libraries(test_dict misaki_static)
 
 add_executable(test_trie tests/test_trie.c)
 target_link_libraries(test_trie misaki_static)
+
+add_executable(test_viterbi tests/test_viterbi.c)
+target_link_libraries(test_viterbi misaki_static m)
 
 # 编译信息
 message(STATUS "==============================================")

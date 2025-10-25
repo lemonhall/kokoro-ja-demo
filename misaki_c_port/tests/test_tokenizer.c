@@ -327,7 +327,92 @@ void test_dag_build_complex(void) {
 }
 
 /* ============================================================================
- * 主测试函数
+ * 英文分词器测试
+ * ========================================================================== */
+
+void test_en_tokenize_simple(void) {
+    const char *text = "Hello world this is a test";
+    MisakiTokenList *tokens = misaki_en_tokenize(text);
+    
+    TEST_ASSERT(tokens != NULL, "英文分词结果不应为 NULL");
+    
+    int count = misaki_token_list_size(tokens);
+    TEST_ASSERT(count == 6, "应该分出 6 个词");
+    
+    MisakiToken *token0 = misaki_token_list_get(tokens, 0);
+    TEST_ASSERT(strcmp(token0->text, "Hello") == 0, "第 0 个词应该是 'Hello'");
+    
+    MisakiToken *token1 = misaki_token_list_get(tokens, 1);
+    TEST_ASSERT(strcmp(token1->text, "world") == 0, "第 1 个词应该是 'world'");
+    
+    misaki_token_list_free(tokens);
+    printf("  ✅ 简单英文分词成功\n");
+}
+
+void test_en_tokenize_with_punctuation(void) {
+    const char *text = "Hello, world! How are you?";
+    
+    // 不保留标点
+    MisakiTokenList *tokens = misaki_en_tokenize(text);
+    TEST_ASSERT(tokens != NULL, "分词结果不应为 NULL");
+    
+    int count = misaki_token_list_size(tokens);
+    TEST_ASSERT(count == 5, "不保留标点时应该分出 5 个词");
+    
+    misaki_token_list_free(tokens);
+    
+    // 保留标点
+    tokens = misaki_en_tokenize_ex(text, true);
+    TEST_ASSERT(tokens != NULL, "保留标点分词结果不应为 NULL");
+    
+    count = misaki_token_list_size(tokens);
+    TEST_ASSERT(count >= 5, "保留标点时应该至少分出 5 个 token");
+    
+    misaki_token_list_free(tokens);
+    printf("  ✅ 英文分词（含标点）成功\n");
+}
+
+/* ============================================================================
+ * 日文分词器测试
+ * ========================================================================== */
+
+void test_ja_tokenize_simple(void) {
+    // 创建简单的日文词典
+    Trie *trie = misaki_trie_create();
+    misaki_trie_insert(trie, "こんにちは", 1.0, NULL);
+    misaki_trie_insert(trie, "世界", 1.0, NULL);
+    misaki_trie_insert(trie, "です", 1.0, NULL);
+    
+    JaTokenizerConfig config = {
+        .dict_trie = trie,
+        .use_simple_model = true,
+        .unidic_path = NULL
+    };
+    
+    void *tokenizer = misaki_ja_tokenizer_create(&config);
+    TEST_ASSERT(tokenizer != NULL, "日文分词器应该创建成功");
+    
+    const char *text = "こんにちは世界";
+    MisakiTokenList *tokens = misaki_ja_tokenize(tokenizer, text);
+    TEST_ASSERT(tokens != NULL, "日文分词结果不应为 NULL");
+    
+    int count = misaki_token_list_size(tokens);
+    TEST_ASSERT(count == 2, "应该分出 2 个词");
+    
+    MisakiToken *token0 = misaki_token_list_get(tokens, 0);
+    TEST_ASSERT(strcmp(token0->text, "こんにちは") == 0, "第 0 个词应该是 'こんにちは'");
+    
+    MisakiToken *token1 = misaki_token_list_get(tokens, 1);
+    TEST_ASSERT(strcmp(token1->text, "世界") == 0, "第 1 个词应该是 '世界'");
+    
+    misaki_token_list_free(tokens);
+    misaki_ja_tokenizer_free(tokenizer);
+    misaki_trie_free(trie);
+    printf("  ✅ 简单日文分词成功\n");
+}
+
+/* ============================================================================
+ * 中文分词器测试
  * ========================================================================== */
 
 void test_zh_tokenizer_create_free(void) {
@@ -470,6 +555,13 @@ int main(void) {
     RUN_TEST(test_zh_tokenizer_create_free);
     RUN_TEST(test_zh_tokenize_simple);
     RUN_TEST(test_zh_tokenize_complex);
+    
+    // 英文分词器测试
+    RUN_TEST(test_en_tokenize_simple);
+    RUN_TEST(test_en_tokenize_with_punctuation);
+    
+    // 日文分词器测试
+    RUN_TEST(test_ja_tokenize_simple);
     
     // 总结
     printf("\n════════════════════════════════════════════════════════════\n");

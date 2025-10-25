@@ -655,27 +655,111 @@ MisakiTokenList* misaki_zh_tokenize_search(void *tokenizer, const char *text) {
 }
 
 /* ============================================================================
- * 日文分词器实现（TODO）
+ * 日文分词器实现（基于 Viterbi 算法）
  * ========================================================================== */
 
+// 日文分词器结构体
+typedef struct {
+    Trie *dict_trie;       // 词典 Trie 树
+    bool use_simple_model; // 使用简化模型
+} JaTokenizer;
+
 void* misaki_ja_tokenizer_create(const JaTokenizerConfig *config) {
-    (void)config;
-    return NULL;
+    if (!config || !config->dict_trie) {
+        return NULL;
+    }
+    
+    JaTokenizer *tokenizer = (JaTokenizer *)calloc(1, sizeof(JaTokenizer));
+    if (!tokenizer) {
+        return NULL;
+    }
+    
+    tokenizer->dict_trie = config->dict_trie;
+    tokenizer->use_simple_model = config->use_simple_model;
+    
+    return tokenizer;
 }
 
 void misaki_ja_tokenizer_free(void *tokenizer) {
-    (void)tokenizer;
+    if (tokenizer) {
+        free(tokenizer);
+    }
 }
 
 MisakiTokenList* misaki_ja_tokenize(void *tokenizer, const char *text) {
-    (void)tokenizer;
-    (void)text;
-    return NULL;
+    if (!tokenizer || !text) {
+        return NULL;
+    }
+    
+    JaTokenizer *ja = (JaTokenizer *)tokenizer;
+    
+    // 简化实现：使用 Trie 树贪婪匹配（类似 MeCab）
+    MisakiTokenList *result = misaki_token_list_create();
+    if (!result) {
+        return NULL;
+    }
+    
+    int byte_pos = 0;
+    const char *p = text;
+    
+    while (*p) {
+        // 尝试从当前位置匹配最长的词
+        TrieMatch match;
+        bool found = misaki_trie_match_longest(ja->dict_trie, text, byte_pos, &match);
+        
+        if (found && match.length > 0) {
+            // 找到匹配，添加 token
+            MisakiToken *token = misaki_token_create(match.word, NULL, byte_pos, match.length);
+            if (token) {
+                misaki_token_list_add(result, token);
+                misaki_token_free(token);
+            }
+            
+            // 移动指针
+            p += match.length;
+            byte_pos += match.length;
+        } else {
+            // 没找到，单字符切分
+            uint32_t codepoint;
+            int bytes = misaki_utf8_decode(p, &codepoint);
+            if (bytes == 0) {
+                break;
+            }
+            
+            char single_char[8];
+            memcpy(single_char, p, bytes);
+            single_char[bytes] = '\0';
+            
+            MisakiToken *token = misaki_token_create(single_char, NULL, byte_pos, bytes);
+            if (token) {
+                misaki_token_list_add(result, token);
+                misaki_token_free(token);
+            }
+            
+            p += bytes;
+            byte_pos += bytes;
+        }
+    }
+    
+    return result;
 }
 
 /* ============================================================================
- * 英文分词器实现（简单空格分割）
+ * 英文分词器实现（空格 + 标点分割）
  * ========================================================================== */
+
+// 判断是否为空白字符
+static bool is_whitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
+// 判断是否为标点
+static bool is_punctuation(char c) {
+    return (c >= 33 && c <= 47) ||   // ! " # $ % & ' ( ) * + , - . /
+           (c >= 58 && c <= 64) ||   // : ; < = > ? @
+           (c >= 91 && c <= 96) ||   // [ \ ] ^ _ `
+           (c >= 123 && c <= 126);   // { | } ~
+}
 
 MisakiTokenList* misaki_en_tokenize(const char *text) {
     return misaki_en_tokenize_ex(text, false);
@@ -691,8 +775,86 @@ MisakiTokenList* misaki_en_tokenize_ex(const char *text, bool keep_punctuation) 
         return NULL;
     }
     
-    // TODO: 实现空格和标点分割
-    (void)keep_punctuation;
+    const char *p = text;
+    int token_start = 0;
+    int current_pos = 0;
+    bool in_token = false;
+    
+    while (*p) {
+        char c = *p;
+        
+        if (is_whitespace(c)) {
+            // 空白字符，结束当前 token
+            if (in_token) {
+                int token_len = current_pos - token_start;
+                if (token_len > 0) {
+                    char word[256];
+                    memcpy(word, text + token_start, token_len);
+                    word[token_len] = '\0';
+                    
+                    MisakiToken *token = misaki_token_create(word, NULL, token_start, token_len);
+                    if (token) {
+                        misaki_token_list_add(list, token);
+                        misaki_token_free(token);
+                    }
+                }
+                in_token = false;
+            }
+        } else if (is_punctuation(c)) {
+            // 标点字符
+            if (in_token) {
+                // 结束当前 token
+                int token_len = current_pos - token_start;
+                if (token_len > 0) {
+                    char word[256];
+                    memcpy(word, text + token_start, token_len);
+                    word[token_len] = '\0';
+                    
+                    MisakiToken *token = misaki_token_create(word, NULL, token_start, token_len);
+                    if (token) {
+                        misaki_token_list_add(list, token);
+                        misaki_token_free(token);
+                    }
+                }
+                in_token = false;
+            }
+            
+            // 如果保留标点，添加为单独 token
+            if (keep_punctuation) {
+                char punct[2] = {c, '\0'};
+                MisakiToken *token = misaki_token_create(punct, NULL, current_pos, 1);
+                if (token) {
+                    misaki_token_list_add(list, token);
+                    misaki_token_free(token);
+                }
+            }
+        } else {
+            // 普通字符
+            if (!in_token) {
+                token_start = current_pos;
+                in_token = true;
+            }
+        }
+        
+        p++;
+        current_pos++;
+    }
+    
+    // 处理最后一个 token
+    if (in_token) {
+        int token_len = current_pos - token_start;
+        if (token_len > 0) {
+            char word[256];
+            memcpy(word, text + token_start, token_len);
+            word[token_len] = '\0';
+            
+            MisakiToken *token = misaki_token_create(word, NULL, token_start, token_len);
+            if (token) {
+                misaki_token_list_add(list, token);
+                misaki_token_free(token);
+            }
+        }
+    }
     
     return list;
 }

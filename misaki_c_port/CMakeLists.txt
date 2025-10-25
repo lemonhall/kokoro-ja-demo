@@ -29,6 +29,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_trie.c
     ${MISAKI_SRC_DIR}/core/misaki_viterbi.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer.c
+    ${MISAKI_SRC_DIR}/core/misaki_g2p.c
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 
@@ -58,6 +59,9 @@ target_link_libraries(test_tokenizer misaki_static m)
 
 add_executable(test_zh_tokenizer_real tests/test_zh_tokenizer_real.c)
 target_link_libraries(test_zh_tokenizer_real misaki_static m)
+
+add_executable(test_g2p tests/test_g2p.c)
+target_link_libraries(test_g2p misaki_static m)
 
 # 编译信息
 message(STATUS "==============================================")

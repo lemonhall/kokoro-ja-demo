@@ -15,6 +15,7 @@
 #include "misaki_viterbi.h"
 #include "misaki_string.h"
 #include "misaki_trie.h"
+#include "misaki_transition_rules.h"  // 添加词性转移规则
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -182,7 +183,12 @@ static MisakiTokenList* ja_tokenize_viterbi(JaTokenizer *ja, const char *text) {
             if (next_pos < text_len) {
                 // 连接到下一个位置的所有节点
                 for (int j = 0; j < counts_by_pos[next_pos]; j++) {
-                    misaki_lattice_add_edge(from, nodes_by_pos[next_pos][j], 0.0);
+                    LatticeNode *to = nodes_by_pos[next_pos][j];
+                    
+                    // ⭐ 添加词性转移成本！
+                    double trans_cost = misaki_get_transition_cost(from->feature, to->feature);
+                    
+                    misaki_lattice_add_edge(from, to, trans_cost);
                 }
             } else if (next_pos == text_len) {
                 // 连接到 EOS

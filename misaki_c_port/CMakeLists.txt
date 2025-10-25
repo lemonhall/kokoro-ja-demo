@@ -32,6 +32,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_zh.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_en.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_ja.c
+    ${MISAKI_SRC_DIR}/core/misaki_transition_rules.c  # 新增：词性转移规则
     ${MISAKI_SRC_DIR}/core/misaki_g2p.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_zh.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_en.c

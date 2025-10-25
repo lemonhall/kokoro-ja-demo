@@ -141,9 +141,9 @@ object ChinesePinyinToIPA {
      * 用箭头代替复杂的 IPA 符号，更直观
      */
     private val toneSimplified = mapOf(
+        "˧˩˧" to "↓",   // 第三声 - 优先匹配长的符号
         "˥" to "→",
         "˧˥" to "↗",
-        "˧˩˧" to "↓",
         "˥˩" to "↘"
     )
     
@@ -206,7 +206,7 @@ object ChinesePinyinToIPA {
         
         // 6. 可选：简化声调符号
         if (simplifyTone) {
-            result = simplifToneMarks(result)
+            result = simplifyToneMarks(result)
         }
         
         return result
@@ -305,12 +305,16 @@ object ChinesePinyinToIPA {
      * 简化声调符号
      * 
      * 将复杂的 IPA 调值符号替换为箭头
+     * 注意：必须先替换长的符号（˧˩˧），再替换短的（˥）
      */
-    private fun simplifToneMarks(ipa: String): String {
+    private fun simplifyToneMarks(ipa: String): String {
         var result = ipa
-        toneSimplified.forEach { (ipaSymbol, arrow) ->
-            result = result.replace(ipaSymbol, arrow)
-        }
+        // 按照符号长度从长到短替换，避免部分替换问题
+        toneSimplified.entries
+            .sortedByDescending { it.key.length }
+            .forEach { (ipaSymbol, arrow) ->
+                result = result.replace(ipaSymbol, arrow)
+            }
         return result
     }
     

@@ -330,6 +330,118 @@ void test_dag_build_complex(void) {
  * 主测试函数
  * ========================================================================== */
 
+void test_zh_tokenizer_create_free(void) {
+    // 创建简单的中文词典
+    Trie *trie = misaki_trie_create();
+    misaki_trie_insert(trie, "我", 1.0, NULL);
+    misaki_trie_insert(trie, "爱", 1.0, NULL);
+    misaki_trie_insert(trie, "中国", 2.0, NULL);
+    
+    ZhTokenizerConfig config = {
+        .dict_trie = trie,
+        .enable_hmm = false,
+        .enable_userdict = false,
+        .user_trie = NULL
+    };
+    
+    void *tokenizer = misaki_zh_tokenizer_create(&config);
+    TEST_ASSERT(tokenizer != NULL, "中文分词器应该创建成功");
+    
+    misaki_zh_tokenizer_free(tokenizer);
+    misaki_trie_free(trie);
+    printf("  ✅ 中文分词器创建和释放成功\n");
+}
+
+void test_zh_tokenize_simple(void) {
+    // 构建中文词典
+    Trie *trie = misaki_trie_create();
+    misaki_trie_insert(trie, "我", 1.0, NULL);
+    misaki_trie_insert(trie, "爱", 1.0, NULL);
+    misaki_trie_insert(trie, "中国", 3.0, NULL);  // 更高频率
+    misaki_trie_insert(trie, "中", 0.5, NULL);
+    misaki_trie_insert(trie, "国", 0.5, NULL);
+    
+    ZhTokenizerConfig config = {
+        .dict_trie = trie,
+        .enable_hmm = false,
+        .enable_userdict = false,
+        .user_trie = NULL
+    };
+    
+    void *tokenizer = misaki_zh_tokenizer_create(&config);
+    TEST_ASSERT(tokenizer != NULL, "分词器创建成功");
+    
+    // 测试分词
+    const char *text = "我爱中国";
+    MisakiTokenList *tokens = misaki_zh_tokenize(tokenizer, text);
+    TEST_ASSERT(tokens != NULL, "分词结果不应为 NULL");
+    
+    int token_count = misaki_token_list_size(tokens);
+    TEST_ASSERT(token_count == 3, "应该分出 3 个词");
+    
+    // 验证第一个词
+    MisakiToken *token0 = misaki_token_list_get(tokens, 0);
+    TEST_ASSERT(token0 != NULL, "第 0 个 token 不应为 NULL");
+    TEST_ASSERT(strcmp(token0->text, "我") == 0, "第 0 个词应该是 '我'");
+    
+    // 验证第二个词
+    MisakiToken *token1 = misaki_token_list_get(tokens, 1);
+    TEST_ASSERT(strcmp(token1->text, "爱") == 0, "第 1 个词应该是 '爱'");
+    
+    // 验证第三个词
+    MisakiToken *token2 = misaki_token_list_get(tokens, 2);
+    TEST_ASSERT(strcmp(token2->text, "中国") == 0, "第 2 个词应该是 '中国'（而不是 '中' + '国'）");
+    
+    misaki_token_list_free(tokens);
+    misaki_zh_tokenizer_free(tokenizer);
+    misaki_trie_free(trie);
+    printf("  ✅ 简单中文分词成功\n");
+}
+
+void test_zh_tokenize_complex(void) {
+    // 构建更复杂的词典
+    Trie *trie = misaki_trie_create();
+    misaki_trie_insert(trie, "北京", 5.0, NULL);
+    misaki_trie_insert(trie, "天安门", 4.0, NULL);
+    misaki_trie_insert(trie, "天", 1.0, NULL);
+    misaki_trie_insert(trie, "安", 0.5, NULL);
+    misaki_trie_insert(trie, "门", 0.5, NULL);
+    misaki_trie_insert(trie, "广场", 3.0, NULL);
+    
+    ZhTokenizerConfig config = {
+        .dict_trie = trie,
+        .enable_hmm = false,
+        .enable_userdict = false,
+        .user_trie = NULL
+    };
+    
+    void *tokenizer = misaki_zh_tokenizer_create(&config);
+    
+    const char *text = "北京天安门";
+    MisakiTokenList *tokens = misaki_zh_tokenize(tokenizer, text);
+    TEST_ASSERT(tokens != NULL, "分词结果不应为 NULL");
+    
+    int token_count = misaki_token_list_size(tokens);
+    printf("  分词结果数量: %d\n", token_count);
+    
+    // 打印分词结果（调试用）
+    for (int i = 0; i < token_count; i++) {
+        MisakiToken *token = misaki_token_list_get(tokens, i);
+        printf("    [%d] %s\n", i, token->text);
+    }
+    
+    TEST_ASSERT(token_count >= 2, "至少应该分出 2 个词");
+    
+    misaki_token_list_free(tokens);
+    misaki_zh_tokenizer_free(tokenizer);
+    misaki_trie_free(trie);
+    printf("  ✅ 复杂中文分词成功\n");
+}
+
+/* ============================================================================
+ * 主测试函数
+ * ========================================================================== */
+
 int main(void) {
     printf("════════════════════════════════════════════════════════════\n");
     printf("  Misaki Tokenizer Tests\n");
@@ -353,6 +465,11 @@ int main(void) {
     RUN_TEST(test_dag_get_next);
     RUN_TEST(test_dag_build_with_trie);
     RUN_TEST(test_dag_build_complex);
+    
+    // 中文分词器测试
+    RUN_TEST(test_zh_tokenizer_create_free);
+    RUN_TEST(test_zh_tokenize_simple);
+    RUN_TEST(test_zh_tokenize_complex);
     
     // 总结
     printf("\n════════════════════════════════════════════════════════════\n");

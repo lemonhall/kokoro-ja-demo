@@ -54,7 +54,10 @@ add_executable(test_viterbi tests/test_viterbi.c)
 target_link_libraries(test_viterbi misaki_static m)
 
 add_executable(test_tokenizer tests/test_tokenizer.c)
-target_link_libraries(test_tokenizer misaki_static)
+target_link_libraries(test_tokenizer misaki_static m)
+
+add_executable(test_zh_tokenizer_real tests/test_zh_tokenizer_real.c)
+target_link_libraries(test_zh_tokenizer_real misaki_static m)
 
 # 编译信息
 message(STATUS "==============================================")

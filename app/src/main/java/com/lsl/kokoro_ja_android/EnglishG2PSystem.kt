@@ -51,6 +51,13 @@ class EnglishG2PSystem(private val context: Context) {
     /**
      * 文本 → IPA 音素
      * 
+     * 策略：
+     * 1. 先查 CMUdict 词典（126k 单词）
+     * 2. 未知单词：转换为中文拼音（音译方案）
+     * 3. 中文拼音再转 IPA
+     * 
+     * ⚠️ 注意：音译方案会产生奇怪的发音！
+     * 
      * @param text 输入文本（英文）
      * @return IPA 音素字符串
      */
@@ -65,11 +72,23 @@ class EnglishG2PSystem(private val context: Context) {
         val phonemesList = mutableListOf<String>()
         
         for (word in words) {
-            // 查询词典
-            val phonemes = pronunciationDict[word] ?: fallbackPronunciation(word)
+            // 1. 查询 CMUdict 词典
+            val dictPhonemes = pronunciationDict[word]
             
-            if (phonemes.isNotEmpty()) {
-                phonemesList.add(phonemes)
+            if (dictPhonemes != null) {
+                // 词典命中：直接使用 IPA 音素
+                phonemesList.add(dictPhonemes)
+            } else {
+                // 2. 词典未命中：使用音译方案
+                val pinyin = EnglishToChinesePinyin.convert(word)
+                
+                if (pinyin.isNotEmpty()) {
+                    // 将拼音转换为 IPA（复用 ChineseG2PSystem 的逻辑）
+                    val ipaPhonemes = convertPinyinToIPA(pinyin)
+                    phonemesList.add(ipaPhonemes)
+                    
+                    println("⚠️ 英文音译: $word → $pinyin → $ipaPhonemes")
+                }
             }
         }
         
@@ -77,16 +96,22 @@ class EnglishG2PSystem(private val context: Context) {
     }
     
     /**
-     * 未知单词的回退策略：逐字母拼读
+     * 将拼音转换为 IPA（简化版，复用中文 G2P 的逻辑）
      * 
-     * 例如："xyz" → "ɛks waɪ zi"
+     * 输入："ai feng" (拼音，空格分隔)
+     * 输出："ai fəŋ" (IPA)
      */
-    private fun fallbackPronunciation(word: String): String {
-        val letterPhonemes = word.map { char ->
-            pronunciationDict[char.toString()] ?: char.toString()
-        }
+    private fun convertPinyinToIPA(pinyin: String): String {
+        // 简化处理：将拼音转为 TONE3 格式（加声调5 = 轻声）
+        val pinyinWithTone = pinyin.split(" ")
+            .map { it + "5" }  // 都用轻声
+            .joinToString(" ")
         
-        return letterPhonemes.joinToString(" ")
+        // 使用 ChinesePinyinToIPA 转换
+        val ipaList = pinyinWithTone.split(" ")
+            .map { ChinesePinyinToIPA.convert(it, simplifyTone = true) }
+        
+        return ipaList.joinToString(" ")
     }
     
     /**

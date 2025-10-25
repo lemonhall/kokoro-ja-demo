@@ -105,6 +105,10 @@ target_link_libraries(test_ja_pron_dict misaki_static m)
 add_executable(test_ja_g2p_full tests/test_ja_g2p_full.c)
 target_link_libraries(test_ja_g2p_full misaki_static m)
 
+# 假名转换调试
+add_executable(test_kana_debug tests/test_kana_debug.c)
+target_link_libraries(test_kana_debug misaki_static m)
+
 # 编译信息
 message(STATUS "==============================================")
 message(STATUS "Misaki C Port - Simple Build")

@@ -211,8 +211,8 @@ int misaki_kana_to_ipa(const char *kana, const char **out_ipa) {
         size_t len = strlen(HEPBURN_DIGRAPH[i].kana);
         if (strncmp(search_kana, HEPBURN_DIGRAPH[i].kana, len) == 0) {
             *out_ipa = HEPBURN_DIGRAPH[i].ipa;
-            // 返回原始 kana 的字节数
-            return hira ? (int)strlen(kana) : (int)len;
+            // 返回原始 kana 的字节数（单字符 = 3字节）
+            return hira ? 3 : (int)len;  // 修复：返回单个字符的字节数
         }
     }
     
@@ -221,7 +221,7 @@ int misaki_kana_to_ipa(const char *kana, const char **out_ipa) {
         size_t len = strlen(HEPBURN_SINGLE[i].kana);
         if (strncmp(search_kana, HEPBURN_SINGLE[i].kana, len) == 0) {
             *out_ipa = HEPBURN_SINGLE[i].ipa;
-            return hira ? (int)strlen(kana) : (int)len;
+            return hira ? 3 : (int)len;  // 修复：返回单个字符的字节数
         }
     }
     

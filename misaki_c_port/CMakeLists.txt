@@ -26,6 +26,7 @@ set(MISAKI_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_string.c
     ${MISAKI_SRC_DIR}/core/misaki_dict.c
+    ${MISAKI_SRC_DIR}/core/misaki_trie.c
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 
@@ -40,6 +41,12 @@ target_link_libraries(test_string misaki_static)
 
 add_executable(test_tsv tests/test_tsv.c)
 target_link_libraries(test_tsv misaki_static)
+
+add_executable(test_dict tests/test_dict.c)
+target_link_libraries(test_dict misaki_static)
+
+add_executable(test_trie tests/test_trie.c)
+target_link_libraries(test_trie misaki_static)
 
 # 编译信息
 message(STATUS "==============================================")

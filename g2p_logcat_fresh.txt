@@ -1,0 +1,22 @@
+
+10-25 11:40:10.344  9507  9532 I System.out: G2P_RESULT|1|銇撱倱銇仭銇€佺銇儸銉兂銇ㄧ敵銇椼伨銇欍€倈ko刹刹i蓵iha 尾ata蓵i 尾a 删emo纱 to mo藧蓵i mas莎
+10-25 11:40:10.346  9507  9532 I System.out: G2P_RESULT|2|浠婃棩銇壇銇勫ぉ姘椼仹銇欍伃銆倈k什o藧 尾a joi te艐ki des莎 ne
+10-25 11:40:10.349  9507  9532 I System.out: G2P_RESULT|3|鏉变含澶у銇嬨倝銇暀瀛︾敓銇с仚銆倈to藧k什o藧dai伞ak莎 ka删a no 删什扫藧伞ak莎se藧 des莎
+10-25 11:40:10.354  9507  9532 I System.out: G2P_RESULT|4|褰煎コ銇棩鏈獮銈掑媺寮枫仐銇︺亜銇俱仚銇屻€併伨銇犱笂鎵嬨仹銇亗銈娿伨銇涖倱銆倈kanod蕬o 尾a niho艐伞o o be艐k什o藧 蓵i te i mas莎 伞a mada d蕬o藧z莎 de 尾a a删i mase 纱
+10-25 11:40:10.356  9507  9532 I System.out: G2P_RESULT|5|瀛︽牎銇歌銇ｃ仸銆佸弸閬斻仺閬娿伋銇俱仐銇熴€倈伞a蕯ko藧 e i蕯 te tomoda蓵i to asobi ma蓵i ta
+10-25 11:40:10.357  9507  9532 I System.out: G2P_RESULT|6|鏂拌仦銈掕銈撱仹銇勩伨銇欍€倈蓵i纱b莎纱 o jo纱 de i mas莎
+10-25 11:40:10.358  9507  9532 I System.out: G2P_RESULT|7|銇嶃倗銇嗐伅銇嶃倕銇嗐倞銈囥亞銇炽仹銇欍€倈ki jo藧hak什莎藧删什o藧bides莎
+10-25 11:40:10.359  9507  9532 I System.out: G2P_RESULT|8|銇嬨亷銈掋亱銇戙仸銇忋仩銇曘亜銆倈ka伞i o kake te k莎dasai
+10-25 11:40:10.360  9507  9532 I System.out: G2P_RESULT|9|銇娿伃銇堛仌銈撱伅銇嶃倢銇勩仹銇欍€倈o ne藧sa纱 尾a ki删e藧 des莎
+10-25 11:40:10.362  9507  9532 I System.out: G2P_RESULT|10|绉併伅鏈倰瑾個銇亴濂姐亶銇с仚銆倈尾ata蓵i 尾a ho纱 o jom莎 no 伞a s莎ki des莎
+10-25 11:40:10.363  9507  9532 I System.out: G2P_RESULT|11|鍒囩銈掕卜銇勩伨銇椼仧銆倈ki蕯p莎 o kai ma蓵i ta
+10-25 11:40:10.364  9507  9532 I System.out: G2P_RESULT|12|鍏堢敓銇屻亜銈夈仯銇椼們銇勩伨銇椼仧銆倈se刹se藧 伞a i删a蕯蓵ai ma蓵i ta
+10-25 11:40:10.365  9507  9532 I System.out: G2P_RESULT|13|銈忋亱銈娿伨銇涖倱銆倈尾aka删i mase 纱
+10-25 11:40:10.366  9507  9532 I System.out: G2P_RESULT|14|浣曟檪銇細銇勩伨銇椼倗銇嗐亱銆倈na纱 d蕬i ni ai ma蓵o 莎 ka
+10-25 11:40:10.367  9507  9532 I System.out: G2P_RESULT|15|涓夈仱銇倞銈撱仈銈掗銇广伨銇椼仧銆倈mi蕯ts莎 no 删i艐伞o o tabe ma蓵i ta
+10-25 11:40:10.368  9507  9532 I System.out: G2P_RESULT|16|闆ㄣ亴闄嶃倞濮嬨倎銇俱仐銇熴€倈ame 伞a 筛莎删i had蕬ime ma蓵i ta
+10-25 11:40:10.369  9507  9532 I System.out: G2P_RESULT|17|鍏堢敓銇銈併倝銈屻伨銇椼仧銆倈se刹se藧 ni home 删a删e ma蓵i ta
+10-25 11:40:10.370  9507  9532 I System.out: G2P_RESULT|18|瀛愪緵銇椤屻倰銇曘仜銇俱仚銆倈kodomo ni 蓵莎k莎dai o sa se mas莎
+10-25 11:40:10.371  9507  9532 I System.out: G2P_RESULT|19|鏆囥仾銈夈€侀亰銇炽伀鏉ャ仸銇忋仩銇曘亜銆倈hima na删a asobi ni ki te k莎dasai
+10-25 11:40:10.372  9507  9532 I System.out: G2P_RESULT|20|銈炽兂銉斻儱銉笺偪銉笺倰浣裤仯銇︺亜銇俱仚銆倈ko纱p什莎ta o ts莎ka蕯 te i mas莎
+

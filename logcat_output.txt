@@ -1,0 +1,23 @@
+--------- beginning of main
+10-25 11:37:49.992  9207  9234 I System.out: ========== G2P_COMPARISON_START ==========
+10-25 11:37:50.759  9207  9234 I System.out: G2P_RESULT|1|こんにちは、私はレモンと申します。|koɲɲiɕiha βataɕi βa ɾemoɴ to moːɕi masɯ
+10-25 11:37:50.761  9207  9234 I System.out: G2P_RESULT|2|今日は良い天気ですね。|kʲoː βa joi teŋki desɯ ne
+10-25 11:37:50.763  9207  9234 I System.out: G2P_RESULT|3|東京大学からの留学生です。|toːkʲoːdaiɡakɯ kaɾa no ɾʲɨːɡakɯseː desɯ
+10-25 11:37:50.768  9207  9234 I System.out: G2P_RESULT|4|彼女は日本語を勉強していますが、まだ上手ではありません。|kanodʑo βa nihoŋɡo o beŋkʲoː ɕi te i masɯ ɡa mada dʑoːzɯ de βa aɾi mase ɴ
+10-25 11:37:50.770  9207  9234 I System.out: G2P_RESULT|5|学校へ行って、友達と遊びました。|ɡaʔkoː e iʔ te tomodaɕi to asobi maɕi ta
+10-25 11:37:50.772  9207  9234 I System.out: G2P_RESULT|6|新聞を読んでいます。|ɕiɴbɯɴ o joɴ de i masɯ
+10-25 11:37:50.772  9207  9234 I System.out: G2P_RESULT|7|きょうはきゅうりょうびです。|ki joːhakʲɯːɾʲoːbidesɯ
+10-25 11:37:50.774  9207  9234 I System.out: G2P_RESULT|8|かぎをかけてください。|kaɡi o kake te kɯdasai
+10-25 11:37:50.775  9207  9234 I System.out: G2P_RESULT|9|おねえさんはきれいです。|o neːsaɴ βa kiɾeː desɯ
+10-25 11:37:50.777  9207  9234 I System.out: G2P_RESULT|10|私は本を読むのが好きです。|βataɕi βa hoɴ o jomɯ no ɡa sɯki desɯ
+10-25 11:37:50.777  9207  9234 I System.out: G2P_RESULT|11|切符を買いました。|kiʔpɯ o kai maɕi ta
+10-25 11:37:50.779  9207  9234 I System.out: G2P_RESULT|12|先生がいらっしゃいました。|seɲseː ɡa iɾaʔɕai maɕi ta
+10-25 11:37:50.779  9207  9234 I System.out: G2P_RESULT|13|わかりません。|βakaɾi mase ɴ
+10-25 11:37:50.780  9207  9234 I System.out: G2P_RESULT|14|何時に会いましょうか。|naɴ dʑi ni ai maɕo ɯ ka
+10-25 11:37:50.782  9207  9234 I System.out: G2P_RESULT|15|三つのりんごを食べました。|miʔtsɯ no ɾiŋɡo o tabe maɕi ta
+10-25 11:37:50.783  9207  9234 I System.out: G2P_RESULT|16|雨が降り始めました。|ame ɡa ɸɯɾi hadʑime maɕi ta
+10-25 11:37:50.783  9207  9234 I System.out: G2P_RESULT|17|先生に褒められました。|seɲseː ni home ɾaɾe maɕi ta
+10-25 11:37:50.785  9207  9234 I System.out: G2P_RESULT|18|子供に宿題をさせます。|kodomo ni ɕɯkɯdai o sa se masɯ
+10-25 11:37:50.786  9207  9234 I System.out: G2P_RESULT|19|暇なら、遊びに来てください。|hima naɾa asobi ni ki te kɯdasai
+10-25 11:37:50.787  9207  9234 I System.out: G2P_RESULT|20|コンピューターを使っています。|koɴpʲɯta o tsɯkaʔ te i masɯ
+10-25 11:37:50.787  9207  9234 I System.out: ========== G2P_COMPARISON_END ==========

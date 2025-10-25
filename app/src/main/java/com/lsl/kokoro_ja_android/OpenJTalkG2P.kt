@@ -300,15 +300,15 @@ object OpenJTalkG2P {
         "cl" to "ʔ",     // 促音 (声门塞音)
         "ng" to "ŋ",     // 软腭鼻音 (k/g 前的拨音)
         
-        // 拗音 (腭化)
+        // 拗音 (腭化) - 优化：减少不必要的腭化标记
         "ky" to "kʲ",
         "gy" to "ɡʲ",
         "ny" to "ɲ",     // 腭化鼻音 (n/t/d/z/s 前的拨音)
-        "hy" to "çʲ",    // ひゃ → çʲa
-        "by" to "bʲ",
-        "py" to "pʲ",
-        "my" to "mʲ",
-        "ry" to "ɾʲ",
+        "hy" to "h",     // ひゃ → ha (Python版本不使用ç)
+        "by" to "b",     // びゃ → ba (减少腭化标记)
+        "py" to "p",     // ぴゃ → pa
+        "my" to "m",     // みゃ → ma
+        "ry" to "ɾʲ",    // りゃ保持腭化
         
         // 特殊辅音
         "sh" to "ɕ",     // し → ɕi
@@ -550,9 +550,10 @@ object OpenJTalkG2P {
     /**
      * 后处理：应用音素同化规则
      * 
-     * 处理：
+     * 优化以匹配 Python (MeCab + Misaki) 的输出：
      * - ɲn → ɲɲ (如 こんにち → koɲɲiɕi)
-     * - ɯ → ɨ 在某些上下文中（如 ryɨ）
+     * - 移除腭化拗音后的元音变化（保持 ɯ 不变）
+     * - 增强拨音同化：ɴn → ɲ, ŋɡ → ŋ
      */
     private fun applyAssimilation(ipa: String): String {
         var result = ipa
@@ -560,8 +561,13 @@ object OpenJTalkG2P {
         // 1. ɲn → ɲɲ (腭化鼻音 + n → 双腭化鼻音)
         result = result.replace("ɲn", "ɲɲ")
         
-        // 2. 处理拗音后的元音：ɹʲɯ → ɹʲɨ
-        result = result.replace("ɾʲɯ", "ɾʲɨ")
+        // 2. 增强拨音同化
+        result = result.replace("ɴn", "ɲ")  // ん+n → ɲ
+        result = result.replace("ɴm", "m")  // ん+m → m  
+        result = result.replace("ŋɡ", "ŋ")  // ng+g → ŋ（避免双写）
+        
+        // 3. 统一元音符号（移除 ɨ 的使用，全部用 ɯ）
+        // 注意：Python版本在拗音后也使用 ɨ，但我们先统一成 ɯ
         
         return result
     }

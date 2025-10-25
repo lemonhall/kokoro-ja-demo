@@ -119,8 +119,8 @@ static MisakiTokenList* ja_tokenize_viterbi(JaTokenizer *ja, const char *text) {
             // 成本 = -log(频率) - 长度奖励
             // 频率越高，成本越低；词越长，成本越低
             // 增大长度奖励，使得长词更有优势
-            // ⭐ 进一步增加到 15.0！
-            double node_cost = -log(freq) - (word_char_len - 1) * 15.0;
+            // ⭐ 增加到 25.0 确保「くれました」等补助动词完整性！
+            double node_cost = -log(freq) - (word_char_len - 1) * 25.0;
             
             // 添加节点到 Lattice
             LatticeNode *node = misaki_lattice_add_node(

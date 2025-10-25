@@ -370,7 +370,10 @@ object OpenJTalkG2P {
         val withMoraic = processMoraicNasal(withGeminate)
         
         // 6. 转换成 Kokoro IPA
-        return convertToKokoroIPA(withMoraic)
+        val ipaString = convertToKokoroIPA(withMoraic)
+        
+        // 7. 后处理：同化规则
+        return applyAssimilation(ipaString)
     }
     
     /**
@@ -486,11 +489,12 @@ object OpenJTalkG2P {
     }
     
     /**
-     * 拨音的上下文变化处理
+     * 拨音的上下文变化处理（增强版）
      * 
      * 规则（根据 Python 版本）：
-     * - N + n/t/d/z → ɲ (腭化鼻音)
-     * - N + g/k → ŋ (软腭鼻音)
+     * - N + n/t/d/z/s/ch/sh/j → ɲ (腭化鼻音)
+     * - N + k/g → ŋ (软腭鼻音)
+     * - N + ɲ → ɲɲ (双腭化鼻音，こんにち的情况)
      * - 其他情况 → ɴ (小型大写)
      */
     private fun processMoraicNasal(phonemes: List<String>): List<String> {
@@ -505,11 +509,11 @@ object OpenJTalkG2P {
                 
                 // 检查下一个音素
                 when {
-                    // n, t, d, z, s, ch, sh, j 前 → ɲ
-                    next in listOf("n", "t", "d", "z", "s", "ch", "sh", "j") -> {
+                    // n, t, d, z, s, ch, sh, j, ny 前 → ɲ
+                    next in listOf("n", "t", "d", "z", "s", "ch", "sh", "j", "ny") -> {
                         result.add("ny")  // 使用 ny，后续会转成 ɲ
                     }
-                    // k, g 前 → ŋ
+                    // k, g, ky, gy 前 → ŋ
                     next in listOf("k", "g", "ky", "gy") -> {
                         result.add("ng")  // 使用 ng，后续会转成 ŋ
                     }
@@ -541,5 +545,24 @@ object OpenJTalkG2P {
                 phonemeToIPA[phoneme] ?: phoneme
             }
         }
+    }
+    
+    /**
+     * 后处理：应用音素同化规则
+     * 
+     * 处理：
+     * - ɲn → ɲɲ (如 こんにち → koɲɲiɕi)
+     * - ɯ → ɨ 在某些上下文中（如 ryɨ）
+     */
+    private fun applyAssimilation(ipa: String): String {
+        var result = ipa
+        
+        // 1. ɲn → ɲɲ (腭化鼻音 + n → 双腭化鼻音)
+        result = result.replace("ɲn", "ɲɲ")
+        
+        // 2. 处理拗音后的元音：ɹʲɯ → ɹʲɨ
+        result = result.replace("ɾʲɯ", "ɾʲɨ")
+        
+        return result
     }
 }

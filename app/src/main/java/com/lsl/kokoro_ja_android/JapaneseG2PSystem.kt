@@ -69,7 +69,24 @@ class JapaneseG2PSystem(private val context: Context) {
         }
         
         // 4. 用空格连接各个词的音素（模拟 Python 版本）
-        return phonemesList.joinToString(" ")
+        val result = phonemesList.joinToString(" ")
+        
+        // 5. 后处理：跨词边界的同化
+        return applyCrossWordAssimilation(result)
+    }
+    
+    /**
+     * 跨词边界的音素同化
+     * 
+     * 处理如 "ɲ n" → "ɲɲ" 的情况
+     */
+    private fun applyCrossWordAssimilation(phonemes: String): String {
+        var result = phonemes
+        
+        // 跨空格的同化：ɲ n → ɲɲ
+        result = result.replace("ɲ n", "ɲɲ")
+        
+        return result
     }
     
     /**

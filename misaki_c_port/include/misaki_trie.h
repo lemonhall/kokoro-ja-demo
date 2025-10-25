@@ -50,6 +50,22 @@ bool misaki_trie_insert(Trie *trie,
                         const char *tag);
 
 /**
+ * 插入词汇（带读音，日文专用）
+ * 
+ * @param trie Trie 树对象
+ * @param word 词汇（UTF-8）
+ * @param pron 读音（片假名，UTF-8）
+ * @param frequency 词频
+ * @param tag 词性标签（可为 NULL）
+ * @return 成功返回 true
+ */
+bool misaki_trie_insert_with_pron(Trie *trie,
+                                  const char *word,
+                                  const char *pron,
+                                  double frequency,
+                                  const char *tag);
+
+/**
  * 查询词汇是否存在
  * 
  * @param trie Trie 树对象
@@ -71,6 +87,22 @@ bool misaki_trie_lookup(const Trie *trie,
                         const char *word,
                         double *frequency,
                         const char **tag);
+
+/**
+ * 查询词汇信息（带读音，日文专用）
+ * 
+ * @param trie Trie 树对象
+ * @param word 词汇（UTF-8）
+ * @param pron 输出：读音（可为 NULL）
+ * @param frequency 输出：词频（可为 NULL）
+ * @param tag 输出：词性标签（可为 NULL）
+ * @return 成功返回 true
+ */
+bool misaki_trie_lookup_with_pron(const Trie *trie,
+                                  const char *word,
+                                  const char **pron,
+                                  double *frequency,
+                                  const char **tag);
 
 /**
  * 删除词汇
@@ -166,6 +198,18 @@ int misaki_trie_greedy_match(const Trie *trie,
 int misaki_trie_load_from_file(Trie *trie, 
                                const char *file_path,
                                const char *format);
+
+/**
+ * 从 TSV 文件加载日文词典（带读音）
+ * 
+ * @param trie Trie 树对象
+ * @param file_path TSV 文件路径
+ * @return 成功加载的词汇数量，失败返回 -1
+ * 
+ * 文件格式：词汇<TAB>读音<TAB>词频<TAB>词性
+ * 示例：こんにちは	コンニチワ	10000	感動詞
+ */
+int misaki_trie_load_ja_pron_dict(Trie *trie, const char *file_path);
 
 /**
  * 从词汇数组批量插入

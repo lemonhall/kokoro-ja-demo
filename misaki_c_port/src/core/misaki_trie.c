@@ -26,6 +26,7 @@ static TrieNode* trie_node_create(uint32_t codepoint) {
     
     node->codepoint = codepoint;
     node->word = NULL;
+    node->pron = NULL;  // 新增：读音字段
     node->frequency = 0.0;
     node->tag = NULL;
     node->children = NULL;
@@ -47,6 +48,7 @@ static void trie_node_free(TrieNode *node) {
     }
     
     free(node->word);
+    free(node->pron);  // 释放读音
     free(node->tag);
     free(node->children);
     free(node);

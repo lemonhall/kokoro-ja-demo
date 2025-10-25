@@ -168,6 +168,7 @@ typedef struct {
 typedef struct TrieNode {
     uint32_t codepoint;        // Unicode 码点（字符）
     char *word;                // 完整词（如果是词尾）
+    char *pron;                // 读音（片假名，日文专用）
     double frequency;          // 词频（用于路径选择）
     char *tag;                 // 词性标签
     struct TrieNode **children; // 子节点数组

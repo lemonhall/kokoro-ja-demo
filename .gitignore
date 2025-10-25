@@ -40,3 +40,7 @@ local.properties
 
 # macOS
 .DS_Store
+
+
+#词典文件
+extracted_data/ja

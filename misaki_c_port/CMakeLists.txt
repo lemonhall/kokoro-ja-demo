@@ -109,6 +109,10 @@ target_link_libraries(test_ja_g2p_full misaki_static m)
 add_executable(test_kana_debug tests/test_kana_debug.c)
 target_link_libraries(test_kana_debug misaki_static m)
 
+# Trie 匹配测试
+add_executable(test_trie_match tests/test_trie_match.c)
+target_link_libraries(test_trie_match misaki_static m)
+
 # 编译信息
 message(STATUS "==============================================")
 message(STATUS "Misaki C Port - Simple Build")

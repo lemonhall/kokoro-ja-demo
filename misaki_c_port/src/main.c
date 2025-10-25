@@ -97,22 +97,42 @@ bool init_app(MisakiApp *app, const char *data_dir) {
         }
     }
     
-    // 4. 日文分词器（简化版）
-    printf("📖 初始化日文分词器...\n");
-    app->ja_trie = misaki_trie_create();
-    // TODO: 从文件加载日文词汇
-    misaki_trie_insert(app->ja_trie, "こんにちは", 1.0, NULL);
-    misaki_trie_insert(app->ja_trie, "世界", 1.0, NULL);
-    misaki_trie_insert(app->ja_trie, "です", 1.0, NULL);
+    // 4. 加载日文词汇+读音词典
+    char ja_dict_path[512];
+    snprintf(ja_dict_path, sizeof(ja_dict_path), "%s/ja/ja_pron_dict.tsv", data_dir);
+    printf("📖 加载日文词汇+读音词典: %s\n", ja_dict_path);
     
-    JaTokenizerConfig ja_config = {
-        .dict_trie = app->ja_trie,
-        .use_simple_model = true,
-        .unidic_path = NULL
-    };
-    app->ja_tokenizer = misaki_ja_tokenizer_create(&ja_config);
-    if (app->ja_tokenizer) {
-        printf("   ✅ 日文分词器初始化成功（简化版）\n");
+    app->ja_trie = misaki_trie_create();
+    int ja_word_count = misaki_trie_load_ja_pron_dict(app->ja_trie, ja_dict_path);
+    if (ja_word_count > 0) {
+        printf("   ✅ 成功加载 %d 个日文词汇（含读音）\n", ja_word_count);
+        
+        // 创建日文分词器
+        JaTokenizerConfig ja_config = {
+            .dict_trie = app->ja_trie,
+            .use_simple_model = true,
+            .unidic_path = NULL
+        };
+        app->ja_tokenizer = misaki_ja_tokenizer_create(&ja_config);
+        if (app->ja_tokenizer) {
+            printf("   ✅ 日文分词器初始化成功（带读音标注）\n");
+        }
+    } else {
+        printf("   ⚠️  无法加载日文词典（使用简化版分词）\n");
+        // 降级到简化版
+        misaki_trie_insert(app->ja_trie, "こんにちは", 1.0, NULL);
+        misaki_trie_insert(app->ja_trie, "世界", 1.0, NULL);
+        misaki_trie_insert(app->ja_trie, "です", 1.0, NULL);
+        
+        JaTokenizerConfig ja_config = {
+            .dict_trie = app->ja_trie,
+            .use_simple_model = true,
+            .unidic_path = NULL
+        };
+        app->ja_tokenizer = misaki_ja_tokenizer_create(&ja_config);
+        if (app->ja_tokenizer) {
+            printf("   ✅ 日文分词器初始化成功（简化版）\n");
+        }
     }
     
     printf("\n");
@@ -141,7 +161,7 @@ void cleanup_app(MisakiApp *app) {
 }
 
 /* ============================================================================
- * 语言检测（简化版）
+ * 语言检测（改进版 - 基于统计）
  * ========================================================================== */
 
 MisakiLanguage detect_language_simple(const char *text) {
@@ -149,30 +169,56 @@ MisakiLanguage detect_language_simple(const char *text) {
         return LANG_UNKNOWN;
     }
     
+    int hiragana_count = 0;  // 平假名
+    int katakana_count = 0;  // 片假名
+    int kanji_count = 0;     // 汉字（CJK）
+    int latin_count = 0;     // 拉丁字母
+    int other_count = 0;     // 其他
+    
     const char *p = text;
     while (*p) {
         uint32_t codepoint;
         int bytes = misaki_utf8_decode(p, &codepoint);
         if (bytes == 0) break;
         
-        // 中文：CJK 统一汉字
-        if (codepoint >= 0x4E00 && codepoint <= 0x9FFF) {
-            return LANG_CHINESE;
+        // 平假名：0x3040-0x309F
+        if (codepoint >= 0x3040 && codepoint <= 0x309F) {
+            hiragana_count++;
         }
-        
-        // 日文：平假名、片假名
-        if ((codepoint >= 0x3040 && codepoint <= 0x309F) ||  // 平假名
-            (codepoint >= 0x30A0 && codepoint <= 0x30FF)) {  // 片假名
-            return LANG_JAPANESE;
+        // 片假名：0x30A0-0x30FF
+        else if (codepoint >= 0x30A0 && codepoint <= 0x30FF) {
+            katakana_count++;
         }
-        
-        // 英文：基本拉丁字母
-        if ((codepoint >= 'A' && codepoint <= 'Z') ||
-            (codepoint >= 'a' && codepoint <= 'z')) {
-            return LANG_ENGLISH;
+        // CJK 统一汉字：0x4E00-0x9FFF
+        else if (codepoint >= 0x4E00 && codepoint <= 0x9FFF) {
+            kanji_count++;
+        }
+        // 拉丁字母
+        else if ((codepoint >= 'A' && codepoint <= 'Z') ||
+                 (codepoint >= 'a' && codepoint <= 'z')) {
+            latin_count++;
+        }
+        else {
+            other_count++;
         }
         
         p += bytes;
+    }
+    
+    // 判断逻辑：
+    // 1. 如果有假名（平假名或片假名），就是日文
+    if (hiragana_count > 0 || katakana_count > 0) {
+        return LANG_JAPANESE;
+    }
+    
+    // 2. 如果只有汉字，但没有假名，判断为中文
+    if (kanji_count > 0) {
+        return LANG_CHINESE;
+    }
+    
+    // 3. 如果主要是拉丁字母，判断为英文
+    if (latin_count > 0) {
+        return LANG_ENGLISH;
     }
     
     return LANG_UNKNOWN;
@@ -228,7 +274,43 @@ void process_text(MisakiApp *app, const char *text) {
         case LANG_JAPANESE:
             if (app->ja_tokenizer) {
                 printf("🔤 日文 G2P 转换中...\n\n");
-                tokens = misaki_ja_g2p(app->ja_tokenizer, text, &options);
+                
+                // 先分词
+                tokens = misaki_ja_tokenize(app->ja_tokenizer, text);
+                if (tokens && app->ja_trie) {
+                    // 为每个 token 查询读音并转换为 IPA
+                    for (int i = 0; i < tokens->count; i++) {
+                        MisakiToken *token = &tokens->tokens[i];
+                        
+                        // 从词典查询读音
+                        const char *pron = NULL;
+                        double freq = 0;
+                        const char *tag = NULL;
+                        
+                        bool found = misaki_trie_lookup_with_pron(
+                            app->ja_trie, token->text, &pron, &freq, &tag);
+                        
+                        if (found && pron) {
+                            // 片假名→IPA
+                            char *phonemes = misaki_ja_kana_to_ipa(pron);
+                            if (phonemes) {
+                                if (token->phonemes) {
+                                    free(token->phonemes);
+                                }
+                                token->phonemes = phonemes;
+                            }
+                        } else {
+                            // 未找到读音，尝试直接转换（对假名有效）
+                            char *phonemes = misaki_ja_kana_to_ipa(token->text);
+                            if (phonemes) {
+                                if (token->phonemes) {
+                                    free(token->phonemes);
+                                }
+                                token->phonemes = phonemes;
+                            }
+                        }
+                    }
+                }
             } else {
                 printf("❌ 日文分词器未加载\n");
             }
@@ -284,9 +366,10 @@ void interactive_mode(MisakiApp *app) {
     printf("════════════════════════════════════════════════════════════\n\n");
     printf("💡 使用说明:\n");
     printf("   - 输入文本，按回车查看 G2P 转换结果\n");
-    printf("   - 支持中文、英文、日文\n");
+    printf("   - 支持中文、英文、日文（带读音标注）\n");
     printf("   - 输入 'quit' 或 'exit' 退出\n");
-    printf("   - 输入 'help' 查看帮助\n\n");
+    printf("   - 输入 'help' 查看帮助\n");
+    printf("   - 输入 'test' 查看测试样例\n\n");
     
     while (1) {
         printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -315,10 +398,31 @@ void interactive_mode(MisakiApp *app) {
             printf("   支持的语言:\n");
             printf("     - 英文: Hello world\n");
             printf("     - 中文: 你好世界\n");
-            printf("     - 日文: こんにちは世界\n\n");
+            printf("     - 日文: こんにちは世界 / 私は学生です\n\n");
             printf("   示例:\n");
             printf("     输入> Hello world\n");
             printf("     输出> həlˈO wˈɜɹld\n\n");
+            printf("     输入> 私は学生です\n");
+            printf("     输出> βatakɯɕi βa ɡakɯseː desɨ\n\n");
+            continue;
+        }
+        
+        // 检查测试命令
+        if (strcmp(input, "test") == 0) {
+            printf("\n🧪 测试样例:\n\n");
+            
+            const char *test_cases[] = {
+                "Hello world",
+                "你好世界",
+                "私は学生です",
+                "コーヒーを飲みます",
+                "ありがとうございます"
+            };
+            
+            for (int i = 0; i < 5; i++) {
+                printf("测试 %d: %s\n", i+1, test_cases[i]);
+                process_text(app, test_cases[i]);
+            }
             continue;
         }
         

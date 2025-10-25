@@ -264,6 +264,14 @@ object OpenJTalkG2P {
     
     /**
      * Open JTalk 音素 → Kokoro IPA 转换表
+     * 
+     * 根据 Python 版本调整：
+     * - w → β (は/わ 都读作 βa)
+     * - ch → ɕ (ち 读作 ɕi)
+     * - N → ɴ (拨音用小型大写字母)
+     * - cl → ʔ (促音用声门塞音)
+     * - ny → ɲ (腭化鼻音)
+     * - ng → ŋ (软腭鼻音)
      */
     private val phonemeToIPA = mapOf(
         // 元音
@@ -287,14 +295,15 @@ object OpenJTalkG2P {
         "m" to "m",
         "y" to "j",      // Open JTalk /y/ → IPA /j/
         "r" to "ɾ",      // 日语 /r/ → IPA /ɾ/ (弹舌音)
-        "w" to "w",
-        "N" to "N",      // 拨音
-        "cl" to "Q",     // 促音 (双辅音标记)
+        "w" to "β",      // は/わ → β (根据 Python 版本)
+        "N" to "ɴ",      // 拨音 (小型大写字母)
+        "cl" to "ʔ",     // 促音 (声门塞音)
+        "ng" to "ŋ",     // 软腭鼻音 (k/g 前的拨音)
         
         // 拗音 (腭化)
         "ky" to "kʲ",
         "gy" to "ɡʲ",
-        "ny" to "nʲ",
+        "ny" to "ɲ",     // 腭化鼻音 (n/t/d/z/s 前的拨音)
         "hy" to "çʲ",    // ひゃ → çʲa
         "by" to "bʲ",
         "py" to "pʲ",
@@ -304,7 +313,7 @@ object OpenJTalkG2P {
         // 特殊辅音
         "sh" to "ɕ",     // し → ɕi
         "j" to "dʑ",     // じ → dʑi
-        "ch" to "tɕ",    // ち → tɕi
+        "ch" to "ɕ",     // ち → ɕi (根据 Python 版本)
         "ts" to "ts",    // つ → tsɯ
         "f" to "ɸ",      // ふ → ɸɯ
         "v" to "v",      // ヴ → v
@@ -357,8 +366,11 @@ object OpenJTalkG2P {
         // 4. 处理促音
         val withGeminate = processGeminate(withLongVowel)
         
-        // 5. 转换成 Kokoro IPA
-        return convertToKokoroIPA(withGeminate)
+        // 5. 处理拨音的上下文变化
+        val withMoraic = processMoraicNasal(withGeminate)
+        
+        // 6. 转换成 Kokoro IPA
+        return convertToKokoroIPA(withMoraic)
     }
     
     /**
@@ -455,8 +467,8 @@ object OpenJTalkG2P {
     /**
      * 促音处理
      * 
-     * 规则: っ (cl) + 辅音 → 双辅音
-     * 例: がっこう → ga + cl + ko + u → gakko
+     * 规则: っ (cl) → ʔ (声门塞音)
+     * 匹配 Python 版本的输出
      */
     private fun processGeminate(phonemes: List<String>): List<String> {
         val result = mutableListOf<String>()
@@ -465,16 +477,50 @@ object OpenJTalkG2P {
         while (i < phonemes.size) {
             val current = phonemes[i]
             
-            // 检查促音
-            if (current == "cl" && i + 1 < phonemes.size) {
-                val nextConsonant = phonemes[i + 1]
-                // 促音标记为 Q，后续会转换成双辅音
-                result.add("cl")
-                i++
-                continue
-            }
-            
+            // 促音直接标记，后续转换时会变成 ʔ
             result.add(current)
+            i++
+        }
+        
+        return result
+    }
+    
+    /**
+     * 拨音的上下文变化处理
+     * 
+     * 规则（根据 Python 版本）：
+     * - N + n/t/d/z → ɲ (腭化鼻音)
+     * - N + g/k → ŋ (软腭鼻音)
+     * - 其他情况 → ɴ (小型大写)
+     */
+    private fun processMoraicNasal(phonemes: List<String>): List<String> {
+        val result = mutableListOf<String>()
+        var i = 0
+        
+        while (i < phonemes.size) {
+            val current = phonemes[i]
+            
+            if (current == "N" && i + 1 < phonemes.size) {
+                val next = phonemes[i + 1]
+                
+                // 检查下一个音素
+                when {
+                    // n, t, d, z, s, ch, sh, j 前 → ɲ
+                    next in listOf("n", "t", "d", "z", "s", "ch", "sh", "j") -> {
+                        result.add("ny")  // 使用 ny，后续会转成 ɲ
+                    }
+                    // k, g 前 → ŋ
+                    next in listOf("k", "g", "ky", "gy") -> {
+                        result.add("ng")  // 使用 ng，后续会转成 ŋ
+                    }
+                    // 其他情况保持 N
+                    else -> {
+                        result.add("N")
+                    }
+                }
+            } else {
+                result.add(current)
+            }
             i++
         }
         

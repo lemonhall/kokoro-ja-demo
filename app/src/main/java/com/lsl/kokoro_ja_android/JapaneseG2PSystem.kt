@@ -51,19 +51,25 @@ class JapaneseG2PSystem(private val context: Context) {
      * - ✅ 混合输入 ("今日は good weather")
      * 
      * @param text 输入文本（可包含汉字、假名、标点等）
-     * @return Kokoro IPA 格式的音素字符串
+     * @return Kokoro IPA 格式的音素字符串（带空格分隔）
      */
     fun textToPhonemes(text: String): String {
         // 1. Kuromoji 分词并获取读音
         val tokens = tokenizer.tokenize(text)
         
-        // 2. 提取每个词的读音（片假名）
-        val katakana = tokens.joinToString("") { token ->
-            getTokenReading(token)
+        // 2. 提取每个词的读音（片假名）并转换为音素
+        val phonemesList = tokens.mapNotNull { token ->
+            val reading = getTokenReading(token)
+            if (reading.isEmpty()) {
+                null
+            } else {
+                // 3. OpenJTalk G2P: 假名 → IPA
+                openJTalkG2P.kanaToPhonemes(reading)
+            }
         }
         
-        // 3. OpenJTalk G2P: 假名 → IPA
-        return openJTalkG2P.kanaToPhonemes(katakana)
+        // 4. 用空格连接各个词的音素（模拟 Python 版本）
+        return phonemesList.joinToString(" ")
     }
     
     /**

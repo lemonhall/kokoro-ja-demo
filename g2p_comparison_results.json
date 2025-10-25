@@ -3,35 +3,35 @@
     "id": 1,
     "text": "こんにちは、私はレモンと申します。",
     "python": "koɲɲiʨiβa βatakɯɕi βa ɾemoɴ to moːɕimasɨ",
-    "kotlin": "koNnitɕihawataɕiwaɾemoNtomoːɕimasɯ",
-    "similarity": 60.0
+    "kotlin": "koɲniɕiha βataɕi βa ɾemoɴ to moːɕi masɯ",
+    "similarity": 82.5
   },
   {
     "id": 2,
     "text": "今日は良い天気ですね。",
     "python": "kʲoː βa joi teŋkʲi desɨ ne",
-    "kotlin": "kʲoːwajoiteNkidesɯne",
-    "similarity": 65.38461538461539
+    "kotlin": "kʲoː βa joi teŋki desɯ ne",
+    "similarity": 92.3076923076923
   },
   {
     "id": 3,
     "text": "東京大学からの留学生です。",
     "python": "toːkʲoː daiɡakɯ kaɾa no ɾʲɨːɡakɯseː desɨ",
-    "kotlin": "toːkʲoːdaiɡakɯkaɾanoɾʲɯːɡakɯseːdesɯ",
-    "similarity": 82.5
+    "kotlin": "toːkʲoːdaiɡakɯ kaɾa no ɾʲɯːɡakɯseː desɯ",
+    "similarity": 92.5
   },
   {
     "id": 4,
     "text": "彼女は日本語を勉強していますが、まだ上手ではありません。",
     "python": "kanoʥo βa ɲiʔpoŋɡo o beŋkʲoː ɕite imasɨ ɡa mada ʥoːzɨ de βa aɾʲimaseɴ",
-    "kotlin": "kanodʑowanihoNɡoːbeNkʲoːɕiteːmasɯɡamadadʑoːzɯdewaːɾimaseN",
-    "similarity": 57.971014492753625
+    "kotlin": "kanodʑo βa nihoŋɡo o beŋkʲoː ɕi te i masɯ ɡa mada dʑoːzɯ de βa aɾi mase ɴ",
+    "similarity": 80.82191780821918
   },
   {
     "id": 5,
     "text": "学校へ行って、友達と遊びました。",
     "python": "ɡaʔkoː e iʔte tomodaʨi to asobʲi maɕita",
-    "kotlin": "ɡaQkoːeːQtetomodatɕitoasobimaɕita",
-    "similarity": 69.23076923076923
+    "kotlin": "ɡaʔkoː e iʔ te tomodaɕi to asobi maɕi ta",
+    "similarity": 90.0
   }
 ]

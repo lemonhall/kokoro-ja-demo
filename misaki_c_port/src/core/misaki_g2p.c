@@ -42,206 +42,21 @@ G2POptions misaki_g2p_default_options(void) {
 
 /* ============================================================================
  * 英文 G2P (CMUdict)
+ * 
+ * 实现已移至 misaki_g2p_en.c
  * ========================================================================== */
-
-char* misaki_en_g2p_word(const EnDict *dict,
-                         const char *word,
-                         const G2POptions *options) {
-    if (!dict || !word) {
-        return NULL;
-    }
-    
-    (void)options;  // TODO: 使用选项
-    
-    // 在词典中查找单词
-    const char *phonemes = misaki_en_dict_lookup(dict, word);
-    if (phonemes) {
-        return misaki_strdup(phonemes);
-    }
-    
-    // 未找到，尝试 OOV 处理
-    return misaki_en_g2p_oov(word);
-}
-
-MisakiTokenList* misaki_en_g2p(const EnDict *dict,
-                               const char *text,
-                               const G2POptions *options) {
-    if (!dict || !text) {
-        return NULL;
-    }
-    
-    // 1. 英文分词（空格分割）
-    MisakiTokenList *tokens = misaki_en_tokenize(text);
-    if (!tokens) {
-        return NULL;
-    }
-    
-    // 2. 为每个 Token 查询音素
-    for (int i = 0; i < tokens->count; i++) {
-        MisakiToken *token = &tokens->tokens[i];
-        
-        // 查询词典
-        char *phonemes = misaki_en_g2p_word(dict, token->text, options);
-        if (phonemes) {
-            token->phonemes = phonemes;
-        }
-    }
-    
-    return tokens;
-}
-
-char* misaki_en_g2p_oov(const char *word) {
-    if (!word) {
-        return NULL;
-    }
-    
-    // TODO: 实现基于规则的音素预测
-    // 简化实现：返回原词（音译）
-    return misaki_strdup(word);
-}
 
 /* ============================================================================
  * 中文 G2P (汉字 → 拼音 → IPA)
+ * 
+ * 实现已移至 misaki_g2p_zh.c
  * ========================================================================== */
-
-char* misaki_zh_pinyin_to_ipa(const char *pinyin) {
-    if (!pinyin) {
-        return NULL;
-    }
-    
-    // TODO: 实现拼音到 IPA 的映射
-    // 简化实现：暂时返回拼音本身
-    return misaki_strdup(pinyin);
-}
-
-MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
-                               void *tokenizer,
-                               const char *text,
-                               const G2POptions *options) {
-    if (!dict || !tokenizer || !text) {
-        return NULL;
-    }
-    
-    // 1. 中文分词
-    MisakiTokenList *tokens = misaki_zh_tokenize(tokenizer, text);
-    if (!tokens) {
-        return NULL;
-    }
-    
-    // 2. 为每个 Token 查询拼音
-    for (int i = 0; i < tokens->count; i++) {
-        MisakiToken *token = &tokens->tokens[i];
-        
-        // 拼接所有字的拼音
-        char pinyin_result[256] = {0};
-        int pinyin_pos = 0;
-        
-        const char *p = token->text;
-        while (*p) {
-            uint32_t codepoint;
-            int bytes = misaki_utf8_decode(p, &codepoint);
-            if (bytes == 0) break;
-            
-            // 查询单字拼音
-            const char **pinyins = NULL;
-            int pinyin_count = 0;
-            if (misaki_zh_dict_lookup(dict, codepoint, &pinyins, &pinyin_count)) {
-                if (pinyin_count > 0 && pinyins[0]) {
-                    // 使用第一个拼音（简化处理，完整版需要根据上下文选择）
-                    int len = strlen(pinyins[0]);
-                    if (pinyin_pos + len + 1 < 256) {
-                        if (pinyin_pos > 0) {
-                            pinyin_result[pinyin_pos++] = ' ';
-                        }
-                        strcpy(pinyin_result + pinyin_pos, pinyins[0]);
-                        pinyin_pos += len;
-                    }
-                }
-            }
-            
-            p += bytes;
-        }
-        
-        if (pinyin_pos > 0) {
-            // 转换拼音为 IPA（简化版：直接使用拼音）
-            token->phonemes = misaki_strdup(pinyin_result);
-        }
-    }
-    
-    // 3. 声调变化处理（如果启用）
-    if (options && options->zh_tone_sandhi) {
-        misaki_zh_tone_sandhi(tokens, options);
-    }
-    
-    // 4. 儿化音处理（如果启用）
-    if (options && options->zh_erhua) {
-        misaki_zh_erhua(tokens);
-    }
-    
-    return tokens;
-}
-
-void misaki_zh_tone_sandhi(MisakiTokenList *tokens,
-                           const G2POptions *options) {
-    // TODO: 实现中文声调变化规则
-    (void)tokens;
-    (void)options;
-}
-
-void misaki_zh_erhua(MisakiTokenList *tokens) {
-    // TODO: 实现儿化音处理
-    (void)tokens;
-}
 
 /* ============================================================================
  * 日文 G2P (假名 → IPA)
+ * 
+ * 实现已移至 misaki_g2p_ja.c
  * ========================================================================== */
-
-char* misaki_ja_kana_to_ipa(const char *kana) {
-    if (!kana) {
-        return NULL;
-    }
-    
-    // TODO: 实现假名到 IPA 的映射（基于 OpenJTalk 规则）
-    // 简化实现：返回罗马音
-    return misaki_strdup(kana);
-}
-
-MisakiTokenList* misaki_ja_g2p(void *tokenizer,
-                               const char *text,
-                               const G2POptions *options) {
-    if (!tokenizer || !text) {
-        return NULL;
-    }
-    
-    // 1. 日文分词
-    MisakiTokenList *tokens = misaki_ja_tokenize(tokenizer, text);
-    if (!tokens) {
-        return NULL;
-    }
-    
-    // 2. 为每个 Token 转换假名为音素
-    for (int i = 0; i < tokens->count; i++) {
-        MisakiToken *token = &tokens->tokens[i];
-        
-        char *phonemes = misaki_ja_kana_to_ipa(token->text);
-        if (phonemes) {
-            token->phonemes = phonemes;
-        }
-    }
-    
-    // 3. 长音处理（如果启用）
-    if (options && options->ja_long_vowel) {
-        misaki_ja_long_vowel(tokens);
-    }
-    
-    return tokens;
-}
-
-void misaki_ja_long_vowel(MisakiTokenList *tokens) {
-    // TODO: 实现日文长音处理
-    (void)tokens;
-}
 
 /* ============================================================================
  * 韩文 G2P

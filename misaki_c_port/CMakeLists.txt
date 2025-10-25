@@ -30,6 +30,9 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_viterbi.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p.c
+    ${MISAKI_SRC_DIR}/core/misaki_g2p_zh.c
+    ${MISAKI_SRC_DIR}/core/misaki_g2p_en.c
+    ${MISAKI_SRC_DIR}/core/misaki_g2p_ja.c
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 
@@ -37,6 +40,10 @@ set(MISAKI_SOURCES
 add_library(misaki_static STATIC ${MISAKI_SOURCES})
 target_include_directories(misaki_static PUBLIC ${MISAKI_INCLUDE_DIR})
 set_target_properties(misaki_static PROPERTIES OUTPUT_NAME misaki)
+
+# 命令行工具（主程序）
+add_executable(misaki src/main.c)
+target_link_libraries(misaki misaki_static m)
 
 # 测试程序
 add_executable(test_string tests/test_string.c)

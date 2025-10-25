@@ -19,13 +19,15 @@
 
 **数据来源**：`extracted_data/en/us_dict.txt`（183,561 个单词）
 
+**文件**：`src/core/misaki_g2p_en.c` (78 行)
+
 ---
 
-### 2. 中文 G2P（汉字 → 拼音）
+### 2. 中文 G2P（汉字 → 拼音 → IPA）
 
 **核心函数**：
-- ✅ `misaki_zh_g2p()` - 完整流程（分词 + 拼音查询）
-- ✅ `misaki_zh_pinyin_to_ipa()` - 拼音转 IPA（简化版）
+- ✅ `misaki_zh_g2p()` - 完整流程（分词 + 拼音查询 + IPA 转换）
+- ✅ `misaki_zh_pinyin_to_ipa()` - 拼音转 IPA（完整实现）
 - ⏳ `misaki_zh_tone_sandhi()` - 声调变化（TODO）
 - ⏳ `misaki_zh_erhua()` - 儿化音（TODO）
 
@@ -33,16 +35,24 @@
 ```
 输入："你好世界"
 输出：
-  [0] "你" → nǐ
-  [1] "好" → hǎo
-  [2] "世界" → shì jiè
+  [0] "你" → ni↓
+  [1] "好" → xɑʊ↓
+  [2] "世界" → ʂi↘ tɕiɛ↘
   
-合并音素: "nǐ hǎo shì jiè"
+合并音素: "ni↓ xɑʊ↓ ʂi↘ tɕiɛ↘"
 ```
 
 **数据来源**：
 - 单字拼音：`extracted_data/zh/pinyin_dict.txt`（41,924 个汉字）
 - 词汇词典：`extracted_data/zh/dict.txt`（86 个词汇）
+
+**文件**：`src/core/misaki_g2p_zh.c` (380 行)
+
+**实现细节**：
+- ✅ 声母映射：21 个（b→p, zh→ʈ͡ʂ, x→ɕ 等）
+- ✅ 韵母映射：34 个（ai→aɪ, ang→ɑŋ 等）
+- ✅ 声调符号：→↗↓↘（IPA 上标）
+- ✅ 支持两种格式：ni3 和 nǐ
 
 **注意事项**：
 - 多音字选择：当前使用第一个拼音（简化处理）
@@ -50,7 +60,7 @@
 
 ---
 
-### 3. 日文 G2P（假名 → 音素）
+### 3. 日文 G2P（假名 → IPA）
 
 **核心函数**：
 - ✅ `misaki_ja_g2p()` - 完整流程（分词 + 音素转换）

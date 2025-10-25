@@ -36,6 +36,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_g2p_zh.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_en.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_ja.c
+    ${MISAKI_SRC_DIR}/core/misaki_kana_map.c
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 
@@ -95,6 +96,14 @@ target_link_libraries(test_g2p_ja misaki_static m)
 # 完整测试套件
 add_executable(test_ja_comprehensive tests/test_ja_comprehensive.c)
 target_link_libraries(test_ja_comprehensive misaki_static m)
+
+# 日文读音词典测试
+add_executable(test_ja_pron_dict tests/test_ja_pron_dict.c)
+target_link_libraries(test_ja_pron_dict misaki_static m)
+
+# 日文完整 G2P 测试
+add_executable(test_ja_g2p_full tests/test_ja_g2p_full.c)
+target_link_libraries(test_ja_g2p_full misaki_static m)
 
 # 编译信息
 message(STATUS "==============================================")

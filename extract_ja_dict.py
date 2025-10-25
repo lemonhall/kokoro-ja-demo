@@ -146,7 +146,7 @@ def main():
     # 配置
     word_list_file = "misaki/misaki/data/ja_words.txt"
     output_file = "extracted_data/ja/ja_pron_dict.tsv"
-    word_limit = 50000  # 提取前 5万个词
+    word_limit = 147571  # 提取前 5万个词
     
     # 检查词汇列表文件
     if not os.path.exists(word_list_file):

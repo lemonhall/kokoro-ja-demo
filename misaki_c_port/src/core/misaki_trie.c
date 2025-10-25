@@ -684,3 +684,135 @@ size_t misaki_trie_memory_usage(const Trie *trie) {
     // 粗略估计
     return sizeof(Trie) + trie->word_count * sizeof(TrieNode) * 10;
 }
+
+/* ============================================================================
+ * 日文词典支持（带读音）
+ * ========================================================================== */
+
+bool misaki_trie_insert_with_pron(Trie *trie,
+                                  const char *word,
+                                  const char *pron,
+                                  double frequency,
+                                  const char *tag) {
+    if (!trie || !word) {
+        return false;
+    }
+    
+    // 先插入词汇
+    if (!misaki_trie_insert(trie, word, frequency, tag)) {
+        return false;
+    }
+    
+    // 查找词尾节点，添加读音
+    TrieNode *current = trie->root;
+    const char *p = word;
+    
+    while (*p) {
+        uint32_t codepoint;
+        int bytes = misaki_utf8_decode(p, &codepoint);
+        if (bytes == 0) {
+            return false;
+        }
+        
+        current = trie_node_find_child(current, codepoint);
+        if (!current) {
+            return false;
+        }
+        
+        p += bytes;
+    }
+    
+    // 保存读音
+    if (pron && !current->pron) {
+        current->pron = misaki_strdup(pron);
+    }
+    
+    return true;
+}
+
+bool misaki_trie_lookup_with_pron(const Trie *trie,
+                                  const char *word,
+                                  const char **pron,
+                                  double *frequency,
+                                  const char **tag) {
+    if (!trie || !word) {
+        return false;
+    }
+    
+    TrieNode *current = trie->root;
+    const char *p = word;
+    
+    while (*p) {
+        uint32_t codepoint;
+        int bytes = misaki_utf8_decode(p, &codepoint);
+        if (bytes == 0) {
+            return false;
+        }
+        
+        current = trie_node_find_child(current, codepoint);
+        if (!current) {
+            return false;
+        }
+        
+        p += bytes;
+    }
+    
+    if (!current->is_word) {
+        return false;
+    }
+    
+    if (pron) {
+        *pron = current->pron;
+    }
+    
+    if (frequency) {
+        *frequency = current->frequency;
+    }
+    
+    if (tag) {
+        *tag = current->tag;
+    }
+    
+    return true;
+}
+
+int misaki_trie_load_ja_pron_dict(Trie *trie, const char *file_path) {
+    if (!trie || !file_path) {
+        return -1;
+    }
+    
+    FILE *fp = fopen(file_path, "r");
+    if (!fp) {
+        return -1;
+    }
+    
+    int count = 0;
+    char line[1024];
+    
+    while (fgets(line, sizeof(line), fp)) {
+        // 跳过注释和空行
+        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r') {
+            continue;
+        }
+        
+        // 解析 TSV: 词汇<TAB>读音<TAB>词频<TAB>词性
+        char word[256] = {0};
+        char pron[256] = {0};
+        char tag[64] = {0};
+        double freq = 1000.0;
+        
+        // 使用 sscanf 解析 TSV
+        int parsed = sscanf(line, "%255[^\t]\t%255[^\t]\t%lf\t%63s",
+                           word, pron, &freq, tag);
+        
+        if (parsed >= 2) {  // 至少需要词汇和读音
+            // 插入到 Trie
+            if (misaki_trie_insert_with_pron(trie, word, pron, freq, parsed >= 4 ? tag : NULL)) {
+                count++;
+            }
+        }
+    }
+    
+    fclose(fp);
+    return count;
+}

@@ -2,27 +2,26 @@
 """
 generate_ja_dict.py
 
-从 MeCab UniDic 字典生成日文词典文件
+从 OpenJTalk 的 NAIST-JDIC 字典生成日文词典文件
 
-这个脚本会读取 MeCab 的 UniDic 字典数据，并提取以下信息：
+这个脚本会读取 OpenJTalk 的 mecab-naist-jdic/naist-jdic.csv，并提取以下信息：
 - 词汇本身
 - 词频（cost 值）
 - 词性标注
+- 读音信息
 
-生成的字典文件格式为 TSV：
-word\tfreq\tpos
-
-UniDic 是什么？
-- MeCab 的标准日文词典
-- 包含约 70万+ 词条
-- 文件大小约 400MB
-- 安装方式：pip install unidic
+OpenJTalk 词典是什么？
+- 基于 NAIST-JDIC 的日文词典
+- 包含约 27万+ 词条
+- 文件大小约 53MB
+- 已包含在项目的 open_jtalk-1.11/mecab-naist-jdic/ 目录中
 
 License: MIT
 """
 
 import sys
 import os
+import csv
 from pathlib import Path
 
 def find_unidic_path():

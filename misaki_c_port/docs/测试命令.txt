@@ -1,0 +1,3 @@
+echo '=== 英文 ===' && ./misaki 'Hello world' && 
+echo && echo '=== 中文 ===' && ./misaki '你好世界' && 
+echo && echo '=== 日文 ===' && ./misaki 'こんにちは世界'

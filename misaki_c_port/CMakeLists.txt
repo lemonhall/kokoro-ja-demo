@@ -92,6 +92,10 @@ target_link_libraries(test_g2p_en misaki_static m)
 add_executable(test_g2p_ja tests/test_g2p_ja.c)
 target_link_libraries(test_g2p_ja misaki_static m)
 
+# 完整测试套件
+add_executable(test_ja_comprehensive tests/test_ja_comprehensive.c)
+target_link_libraries(test_ja_comprehensive misaki_static m)
+
 # 编译信息
 message(STATUS "==============================================")
 message(STATUS "Misaki C Port - Simple Build")

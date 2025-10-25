@@ -73,7 +73,7 @@ void test_ja_g2p_hiragana() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -115,7 +115,7 @@ void test_ja_g2p_katakana() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -156,7 +156,7 @@ void test_ja_g2p_mixed() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -195,7 +195,7 @@ void test_ja_g2p_long_vowel() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);

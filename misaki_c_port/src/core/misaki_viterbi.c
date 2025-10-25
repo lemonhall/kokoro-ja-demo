@@ -30,15 +30,27 @@ Lattice* misaki_lattice_create(int text_length) {
     
     lattice->text_length = text_length;
     
-    // 分配节点数组（每个位置一个槽）
-    lattice->nodes = (LatticeNode **)calloc(text_length + 1, sizeof(LatticeNode *));
+    // 分配节点数组（每个位置是一个动态数组）
+    lattice->nodes = (LatticeNode ***)calloc(text_length + 1, sizeof(LatticeNode **));
     lattice->node_counts = (int *)calloc(text_length + 1, sizeof(int));
+    lattice->node_capacities = (int *)calloc(text_length + 1, sizeof(int));
     
-    if (!lattice->nodes || !lattice->node_counts) {
+    if (!lattice->nodes || !lattice->node_counts || !lattice->node_capacities) {
         free(lattice->nodes);
         free(lattice->node_counts);
+        free(lattice->node_capacities);
         free(lattice);
         return NULL;
+    }
+    
+    // 为每个位置初始化数组
+    for (int i = 0; i <= text_length; i++) {
+        lattice->node_capacities[i] = 10;  // 初始容量
+        lattice->nodes[i] = (LatticeNode **)calloc(10, sizeof(LatticeNode *));
+        if (!lattice->nodes[i]) {
+            misaki_lattice_free(lattice);
+            return NULL;
+        }
     }
     
     // 创建 BOS 和 EOS 节点
@@ -46,11 +58,7 @@ Lattice* misaki_lattice_create(int text_length) {
     lattice->eos = (LatticeNode *)calloc(1, sizeof(LatticeNode));
     
     if (!lattice->bos || !lattice->eos) {
-        free(lattice->nodes);
-        free(lattice->node_counts);
-        free(lattice->bos);
-        free(lattice->eos);
-        free(lattice);
+        misaki_lattice_free(lattice);
         return NULL;
     }
     
@@ -76,16 +84,19 @@ void misaki_lattice_free(Lattice *lattice) {
     
     // 释放所有位置的节点
     for (int i = 0; i <= lattice->text_length; i++) {
-        LatticeNode *node = lattice->nodes[i];
-        while (node) {
-            LatticeNode *next = node->next ? node->next[0] : NULL;
-            free(node->surface);
-            free(node->feature);
-            free(node->reading);
-            free(node->phonemes);
-            free(node->next);
-            free(node);
-            node = next;
+        if (lattice->nodes[i]) {
+            for (int j = 0; j < lattice->node_counts[i]; j++) {
+                LatticeNode *node = lattice->nodes[i][j];
+                if (node) {
+                    free(node->surface);
+                    free(node->feature);
+                    free(node->reading);
+                    free(node->phonemes);
+                    free(node->next);
+                    free(node);
+                }
+            }
+            free(lattice->nodes[i]);
         }
     }
     
@@ -103,6 +114,7 @@ void misaki_lattice_free(Lattice *lattice) {
     
     free(lattice->nodes);
     free(lattice->node_counts);
+    free(lattice->node_capacities);
     free(lattice);
 }
 
@@ -129,13 +141,28 @@ LatticeNode* misaki_lattice_add_node(Lattice *lattice,
     node->total_cost = DBL_MAX;
     node->start = pos;
     node->length = strlen(surface);
-    
-    // 初始化 next 数组（用于 Viterbi 后继节点）
     node->next = NULL;
     node->next_count = 0;
+    node->prev = NULL;
     
-    // 不再使用 next[0] 做链表，直接存储在 nodes 数组的相同位置
-    lattice->node_counts[pos]++;
+    // 检查是否需要扩容
+    if (lattice->node_counts[pos] >= lattice->node_capacities[pos]) {
+        int new_capacity = lattice->node_capacities[pos] * 2;
+        LatticeNode **new_array = (LatticeNode **)realloc(
+            lattice->nodes[pos], sizeof(LatticeNode *) * new_capacity);
+        if (!new_array) {
+            free(node->surface);
+            free(node->feature);
+            free(node->reading);
+            free(node);
+            return NULL;
+        }
+        lattice->nodes[pos] = new_array;
+        lattice->node_capacities[pos] = new_capacity;
+    }
+    
+    // 添加节点到数组
+    lattice->nodes[pos][lattice->node_counts[pos]++] = node;
     
     return node;
 }
@@ -175,20 +202,27 @@ int misaki_lattice_get_nodes_at(const Lattice *lattice,
         return 0;
     }
     
-    int count = 0;
-    
     // BOS 特殊处理
-    if (pos == 0 && count < max_count) {
-        nodes[count++] = lattice->bos;
+    if (pos == 0) {
+        nodes[0] = lattice->bos;
+        return 1;
     }
     
     // EOS 特殊处理
-    if (pos == lattice->text_length && count < max_count) {
-        nodes[count++] = lattice->eos;
+    if (pos == lattice->text_length) {
+        nodes[0] = lattice->eos;
+        return 1;
     }
     
-    // TODO: 应该存储在 lattice->nodes[pos] 数组中
-    // 简化版：只返回 BOS/EOS
+    // 返回该位置的所有节点
+    int count = lattice->node_counts[pos];
+    if (count > max_count) {
+        count = max_count;
+    }
+    
+    for (int i = 0; i < count; i++) {
+        nodes[i] = lattice->nodes[pos][i];
+    }
     
     return count;
 }
@@ -202,13 +236,24 @@ bool misaki_viterbi_search(Lattice *lattice) {
         return false;
     }
     
-    // 前向传播：计算每个节点的最小成本
-    for (int pos = 0; pos <= lattice->text_length; pos++) {
-        LatticeNode *nodes[100];
-        int count = misaki_lattice_get_nodes_at(lattice, pos, nodes, 100);
-        
-        for (int i = 0; i < count; i++) {
-            LatticeNode *node = nodes[i];
+    // 初始化 BOS
+    lattice->bos->total_cost = 0.0;
+    
+    // 前向传播：从 BOS 开始
+    // 首先处理 BOS 的后继
+    for (int j = 0; j < lattice->bos->next_count; j++) {
+        LatticeNode *next = lattice->bos->next[j];
+        double cost = lattice->bos->total_cost + next->node_cost + next->edge_cost;
+        if (cost < next->total_cost) {
+            next->total_cost = cost;
+            next->prev = lattice->bos;
+        }
+    }
+    
+    // 然后处理所有位置的节点
+    for (int pos = 0; pos < lattice->text_length; pos++) {
+        for (int i = 0; i < lattice->node_counts[pos]; i++) {
+            LatticeNode *node = lattice->nodes[pos][i];
             
             // 遍历所有后继节点
             for (int j = 0; j < node->next_count; j++) {

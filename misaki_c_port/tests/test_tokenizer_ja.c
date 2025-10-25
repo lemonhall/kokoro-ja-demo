@@ -40,7 +40,7 @@ void test_ja_tokenizer_create() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -58,7 +58,7 @@ void test_ja_tokenize_hiragana() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -92,7 +92,7 @@ void test_ja_tokenize_katakana() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -121,7 +121,7 @@ void test_ja_tokenize_kanji() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -153,7 +153,7 @@ void test_ja_tokenize_mixed() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);
@@ -194,7 +194,7 @@ void test_ja_tokenize_punctuation() {
     
     JaTokenizerConfig config = {
         .dict_trie = trie,
-        .use_simple_model = true
+        .use_simple_model = false  // 强制 Viterbi 模式
     };
     
     void *tokenizer = misaki_ja_tokenizer_create(&config);

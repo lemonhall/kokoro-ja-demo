@@ -46,8 +46,9 @@ typedef struct LatticeNode {
  * Lattice: 词格（保存所有可能的分词路径）
  */
 typedef struct Lattice {
-    LatticeNode **nodes;       // 节点数组（按位置分组）
+    LatticeNode ***nodes;      // 节点数组（每个位置是一个动态数组）
     int *node_counts;          // 每个位置的节点数
+    int *node_capacities;      // 每个位置的数组容量
     int text_length;           // 文本长度（字符数）
     
     LatticeNode *bos;          // 起始节点 (Begin of Sentence)

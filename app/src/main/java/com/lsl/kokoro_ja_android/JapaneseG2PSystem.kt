@@ -73,11 +73,17 @@ class JapaneseG2PSystem(private val context: Context) {
      * - 优先使用 Kuromoji 提供的 reading
      * - 如果没有 reading（如标点符号），使用 surface
      * - 处理特殊情况（如助词"は"读作"わ"）
+     * - 过滤标点符号和非音素字符
      */
     private fun getTokenReading(token: Token): String {
         val surface = token.surface
         val reading = token.reading
         val pos = token.partOfSpeechLevel1
+        
+        // 0. 过滤标点符号
+        if (isPunctuation(surface)) {
+            return ""  // 返回空字符串，稍后会被过滤掉
+        }
         
         // 1. 特殊处理：助词 "は" 读作 "ワ"
         if (surface == "は" && pos == "助詞") {
@@ -99,8 +105,8 @@ class JapaneseG2PSystem(private val context: Context) {
             return openJTalkG2P.hiraganaToKatakana(surface)
         }
         
-        // 5. 其他情况（如标点、数字、英文），原样返回
-        return surface
+        // 5. 其他情况（如数字、英文），返回空字符串
+        return ""
     }
     
     /**
@@ -110,6 +116,26 @@ class JapaneseG2PSystem(private val context: Context) {
         return text.all { char ->
             char.code in 0x3040..0x309F ||  // 平假名
             char.code in 0x30A0..0x30FF      // 片假名
+        }
+    }
+    
+    /**
+     * 检查字符串是否是标点符号或非音素字符
+     */
+    private fun isPunctuation(text: String): Boolean {
+        // 常见标点符号和分隔符
+        val punctuations = setOf(
+            "、", "。", "！", "？", "，", "：", "；", 
+            ",", ".", "!", "?", ":", ";",
+            "（", "）", "[", "]", "{", "}",
+            "「", "」", "『", "』", "【", "】",
+            " ", "　", "\n", "\t", "\r"
+        )
+        return text in punctuations || text.all { char ->
+            // Unicode 标点符号范围
+            char.code in 0x2000..0x206F ||  // General Punctuation
+            char.code in 0x3000..0x303F ||  // CJK Symbols and Punctuation
+            char.code in 0xFF00..0xFFEF     // Halfwidth and Fullwidth Forms (部分)
         }
     }
     

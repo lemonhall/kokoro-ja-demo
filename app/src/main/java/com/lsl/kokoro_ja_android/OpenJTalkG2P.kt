@@ -389,8 +389,8 @@ object OpenJTalkG2P {
                     phonemes.add(consonant)
                     vowel?.let { phonemes.add(it) }
                 } ?: run {
-                    // 未知字符，保留原样
-                    phonemes.add(oneChar)
+                    // 未知字符，忽略（不添加到音素列表）
+                    // 这包括标点符号、数字、英文等
                 }
                 i++
             }

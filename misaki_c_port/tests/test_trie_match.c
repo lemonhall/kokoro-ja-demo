@@ -14,7 +14,7 @@ int main(void) {
     printf("加载了 %d 个词汇\n\n", count);
     
     // 测试文本
-    const char *text = "新しいカフェ";
+    const char *text = "飲んでいる";
     printf("测试文本: %s\n\n", text);
     
     // 从位置 0 开始匹配

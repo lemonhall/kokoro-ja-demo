@@ -119,7 +119,8 @@ static MisakiTokenList* ja_tokenize_viterbi(JaTokenizer *ja, const char *text) {
             // 成本 = -log(频率) - 长度奖励
             // 频率越高，成本越低；词越长，成本越低
             // 增大长度奖励，使得长词更有优势
-            double node_cost = -log(freq) - (word_char_len - 1) * 10.0;  // 增加到 10.0！
+            // ⭐ 进一步增加到 15.0！
+            double node_cost = -log(freq) - (word_char_len - 1) * 15.0;
             
             // 添加节点到 Lattice
             LatticeNode *node = misaki_lattice_add_node(
@@ -148,8 +149,9 @@ static MisakiTokenList* ja_tokenize_viterbi(JaTokenizer *ja, const char *text) {
                 
                 // 单字符的成本较高（惩罚）
                 // 提高惩罚值，使得分词器更倾向于选择长词
+                // ⭐ 进一步提高到 30.0！
                 LatticeNode *node = misaki_lattice_add_node(
-                    lattice, char_pos, single_char, "UNK", NULL, 20.0);  // 进一步提高惩罚
+                    lattice, char_pos, single_char, "UNK", NULL, 30.0);
                 
                 if (node) {
                     node->length = 1;  // 单字符

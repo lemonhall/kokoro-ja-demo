@@ -104,7 +104,7 @@ class ChineseG2PSystem(private val context: Context) {
         }
         
         // 4. 用空格连接（Kokoro 格式）
-        return ipaList.joinToString("")
+        return ipaList.joinToString(" ")
     }
     
     /**

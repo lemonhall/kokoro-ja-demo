@@ -194,6 +194,79 @@ object LanguageDetector {
         return detect(text) == Language.KOREAN
     }
     
+    /**
+     * 按语言分段文本（支持混合语言）
+     * 
+     * 示例：
+     *   "我买了iPhone很好" 
+     *   → [("我买了", CHINESE), ("iPhone", ENGLISH), ("很好", CHINESE)]
+     * 
+     * @param text 输入文本
+     * @return 语言片段列表
+     */
+    fun segmentByLanguage(text: String): List<LanguageSegment> {
+        if (text.isEmpty()) return emptyList()
+        
+        val segments = mutableListOf<LanguageSegment>()
+        val currentSegment = StringBuilder()
+        var currentLanguage: Language? = null
+        
+        for (char in text) {
+            // 跳过的字符（标点、空格、数字）统一归到当前语言段
+            if (char.isWhitespace() || char.isDigit() || isPunctuation(char)) {
+                currentSegment.append(char)
+                continue
+            }
+            
+            // 检测字符的语言
+            val charLanguage = detectCharLanguage(char)
+            
+            // 语言切换：保存当前段，开始新段
+            if (currentLanguage != null && charLanguage != currentLanguage && charLanguage != Language.UNKNOWN) {
+                if (currentSegment.isNotEmpty()) {
+                    segments.add(LanguageSegment(currentSegment.toString(), currentLanguage))
+                    currentSegment.clear()
+                }
+                currentLanguage = charLanguage
+            } else if (currentLanguage == null && charLanguage != Language.UNKNOWN) {
+                // 第一个有效字符
+                currentLanguage = charLanguage
+            }
+            
+            currentSegment.append(char)
+        }
+        
+        // 保存最后一段
+        if (currentSegment.isNotEmpty() && currentLanguage != null) {
+            segments.add(LanguageSegment(currentSegment.toString(), currentLanguage))
+        }
+        
+        return segments
+    }
+    
+    /**
+     * 检测单个字符的语言
+     */
+    private fun detectCharLanguage(char: Char): Language {
+        val code = char.code
+        
+        return when {
+            isInRange(code, UnicodeRange.JAPANESE) -> Language.JAPANESE  // 优先日文（假名）
+            isInRange(code, UnicodeRange.KOREAN) -> Language.KOREAN
+            isInRange(code, UnicodeRange.CHINESE) -> Language.CHINESE    // CJK汉字可能是中文或日文
+            isInRange(code, UnicodeRange.ENGLISH) -> Language.ENGLISH
+            else -> Language.UNKNOWN
+        }
+    }
+    
+    /**
+     * 语言片段
+     */
+    data class LanguageSegment(
+        val text: String,      // 文本片段
+        val language: Language // 该片段的语言
+    )
+    
     // ========== 辅助函数 ==========
     
     /**

@@ -13,4 +13,5 @@ dependencies = [
     "onnx>=1.19.1",
     "onnxruntime>=1.23.2",
     "onnxconverter-common>=1.16.0",
+    "pronouncing>=0.2.0",
 ]

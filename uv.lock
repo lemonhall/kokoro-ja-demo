@@ -174,6 +174,19 @@ wheels = [
 ]
 
 [[package]]
+name = "cmudict"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "importlib-metadata" },
+    { name = "importlib-resources" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/cf/6f1fe88339c28e38acfa8f478b640778f7e5cc8bb1bd2cbf32cfcd2c515e/cmudict-1.1.1.tar.gz", hash = "sha256:23c3914c85465f6a7d26d2d8974fa341dd7bc924d1ffa501b41406b936923db1", size = 935697, upload-time = "2025-07-24T10:51:09.6Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/5d/b14b1d8319c977771e8e94eb7f34404dd116f1d7d78dd9e0f2da87ac4609/cmudict-1.1.1-py3-none-any.whl", hash = "sha256:4b4737c0fa52375b1601d7b63824f155879a824064b6ecac07d347eae60fc046", size = 939663, upload-time = "2025-07-24T10:51:08.117Z" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -390,6 +403,27 @@ wheels = [
 ]
 
 [[package]]
+name = "importlib-metadata"
+version = "8.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "zipp" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/76/66/650a33bd90f786193e4de4b3ad86ea60b53c89b669a5c7be931fac31cdb0/importlib_metadata-8.7.0.tar.gz", hash = "sha256:d13b81ad223b890aa16c5471f2ac3056cf76c5f10f82d6f9292f0b415f389000", size = 56641, upload-time = "2025-04-27T15:29:01.736Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/20/b0/36bd937216ec521246249be3bf9855081de4c5e06a0c9b4219dbeda50373/importlib_metadata-8.7.0-py3-none-any.whl", hash = "sha256:e5dd1551894c77868a30651cef00984d50e1002d06942a7101d34870c5f02afd", size = 27656, upload-time = "2025-04-27T15:29:00.214Z" },
+]
+
+[[package]]
+name = "importlib-resources"
+version = "6.5.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/8c/f834fbf984f691b4f7ff60f50b514cc3de5cc08abfc3295564dd89c5e2e7/importlib_resources-6.5.2.tar.gz", hash = "sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c", size = 44693, upload-time = "2025-01-03T18:51:56.698Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl", hash = "sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec", size = 37461, upload-time = "2025-01-03T18:51:54.306Z" },
+]
+
+[[package]]
 name = "isodate"
 version = "0.7.2"
 source = { registry = "https://pypi.org/simple" }
@@ -479,6 +513,7 @@ dependencies = [
     { name = "onnx" },
     { name = "onnxconverter-common" },
     { name = "onnxruntime" },
+    { name = "pronouncing" },
     { name = "soundfile" },
     { name = "unidic" },
     { name = "unidic-lite" },
@@ -491,6 +526,7 @@ requires-dist = [
     { name = "onnx", specifier = ">=1.19.1" },
     { name = "onnxconverter-common", specifier = ">=1.16.0" },
     { name = "onnxruntime", specifier = ">=1.23.2" },
+    { name = "pronouncing", specifier = ">=0.2.0" },
     { name = "soundfile" },
     { name = "unidic", specifier = ">=1.1.0" },
     { name = "unidic-lite", specifier = ">=1.0.8" },
@@ -1053,6 +1089,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/1c/2a3961fc88bc72300ff7e4ca54689bda90d2d77cc994167cc09a310480b6/preshed-3.0.10-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:c4ef96cb28bf5f08de9c070143113e168efccbb68fd4961e7d445f734c051a97", size = 837333, upload-time = "2025-05-26T15:18:19.937Z" },
     { url = "https://files.pythonhosted.org/packages/fa/8c/d3e30f80b2ef21f267f09f0b7d18995adccc928ede5b73ea3fe54e1303f4/preshed-3.0.10-cp313-cp313-win_amd64.whl", hash = "sha256:97e0e2edfd25a7dfba799b49b3c5cc248ad0318a76edd9d5fd2c82aa3d5c64ed", size = 115769, upload-time = "2025-05-26T15:18:21.842Z" },
 ]
+
+[[package]]
+name = "pronouncing"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cmudict" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7f/c6/9dc74a3ddca71c492e224116b6654592bfe5717b4a78582e4d9c3345d153/pronouncing-0.2.0.tar.gz", hash = "sha256:ff7856e1d973b3e16ff490c5cf1abdb52f08f45e2c35e463249b75741331e7c4", size = 17562, upload-time = "2018-07-02T04:13:05.37Z" }
 
 [[package]]
 name = "protobuf"
@@ -1900,4 +1945,13 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/79/d9/7cfd5a312760ac4dd8bf0184a6ee9e43c33e47f3dadc303032ce012b8fa3/wrapt-1.17.3-cp314-cp314t-win_amd64.whl", hash = "sha256:73d496de46cd2cdbdbcce4ae4bcdb4afb6a11234a1df9c085249d55166b95116", size = 41334, upload-time = "2025-08-12T05:53:14.178Z" },
     { url = "https://files.pythonhosted.org/packages/46/78/10ad9781128ed2f99dbc474f43283b13fea8ba58723e98844367531c18e9/wrapt-1.17.3-cp314-cp314t-win_arm64.whl", hash = "sha256:f38e60678850c42461d4202739f9bf1e3a737c7ad283638251e79cc49effb6b6", size = 38471, upload-time = "2025-08-12T05:52:57.784Z" },
     { url = "https://files.pythonhosted.org/packages/1f/f6/a933bd70f98e9cf3e08167fc5cd7aaaca49147e48411c0bd5ae701bb2194/wrapt-1.17.3-py3-none-any.whl", hash = "sha256:7171ae35d2c33d326ac19dd8facb1e82e5fd04ef8c6c0e394d7af55a55051c22", size = 23591, upload-time = "2025-08-12T05:53:20.674Z" },
+]
+
+[[package]]
+name = "zipp"
+version = "3.23.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/02/0f2892c661036d50ede074e376733dca2ae7c6eb617489437771209d4180/zipp-3.23.0.tar.gz", hash = "sha256:a07157588a12518c9d4034df3fbbee09c814741a33ff63c05fa29d26a2404166", size = 25547, upload-time = "2025-06-08T17:06:39.4Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl", hash = "sha256:071652d6115ed432f5ce1d34c336c0adfd6a884660d1e9712a256d3d3bd4b14e", size = 10276, upload-time = "2025-06-08T17:06:38.034Z" },
 ]

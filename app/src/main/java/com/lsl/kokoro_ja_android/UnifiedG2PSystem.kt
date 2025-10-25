@@ -40,6 +40,13 @@ class UnifiedG2PSystem(private val context: Context) {
     }
     
     /**
+     * 英文 G2P 系统（延迟初始化）
+     */
+    private val englishG2P: EnglishG2PSystem by lazy {
+        EnglishG2PSystem(context)
+    }
+    
+    /**
      * 韩文 G2P 系统（预留，未实现）
      */
     // private val koreanG2P: KoreanG2PSystem by lazy {
@@ -53,48 +60,67 @@ class UnifiedG2PSystem(private val context: Context) {
      * @return IPA 音素字符串
      * 
      * 流程：
-     * 1. 自动检测文本语言
+     * 1. 自动检测文本语言（支持混合语言）
      * 2. 选择对应的 G2P 引擎
      * 3. 转换为音素
+     * 
+     * 支持混合语言：
+     * - “我买了iPhone很好” → 自动分段处理
+     * - “この手机smartphone” → 日文+英文混合
      */
     fun textToPhonemes(text: String): String {
         if (text.isEmpty()) return ""
         
-        // 1. 检测语言
-        val language = LanguageDetector.detect(text)
+        // 1. 按语言分段
+        val segments = LanguageDetector.segmentByLanguage(text)
         
-        // 2. 根据语言选择 G2P 系统
-        return when (language) {
-            LanguageDetector.Language.CHINESE -> {
-                chineseG2P.textToPhonemes(text)
+        // 2. 逐段转换
+        val phonemesList = mutableListOf<String>()
+        
+        for (segment in segments) {
+            val phonemes = when (segment.language) {
+                LanguageDetector.Language.CHINESE -> {
+                    chineseG2P.textToPhonemes(segment.text)
+                }
+                LanguageDetector.Language.JAPANESE -> {
+                    japaneseG2P.textToPhonemes(segment.text)
+                }
+                LanguageDetector.Language.KOREAN -> {
+                    // 韩文暂未支持
+                    // koreanG2P.textToPhonemes(segment.text)
+                    ""  // 跳过
+                }
+                LanguageDetector.Language.ENGLISH -> {
+                    // 英文：使用 CMUdict 词典
+                    englishG2P.textToPhonemes(segment.text)
+                }
+                else -> {
+                    segment.text  // 未知语言直接保留
+                }
             }
-            LanguageDetector.Language.JAPANESE -> {
-                japaneseG2P.textToPhonemes(text)
-            }
-            LanguageDetector.Language.KOREAN -> {
-                // 未来支持韩文
-                // koreanG2P.textToPhonemes(text)
-                throw UnsupportedOperationException("韩文暂未支持，敬请期待！")
-            }
-            else -> {
-                // 未知语言，尝试日文（兼容旧版本）
-                japaneseG2P.textToPhonemes(text)
+            
+            if (phonemes.isNotEmpty()) {
+                phonemesList.add(phonemes)
             }
         }
+        
+        return phonemesList.joinToString(" ")
     }
     
     /**
      * 获取推荐的语音嵌入名称
      * 
-     * 根据检测到的语言，返回对应的默认音色
+     * 根据检测到的主要语言，返回对应的默认音色
      * 
      * @param text 输入文本
      * @return 语音嵌入名称
      */
     fun getRecommendedVoice(text: String): String {
-        val language = LanguageDetector.detect(text)
+        // 分段后，选择第一个有效语言段的语言
+        val segments = LanguageDetector.segmentByLanguage(text)
+        val firstLanguage = segments.firstOrNull()?.language ?: LanguageDetector.Language.UNKNOWN
         
-        return when (language) {
+        return when (firstLanguage) {
             LanguageDetector.Language.CHINESE -> "zf_xiaoxiao"  // 中文女声
             LanguageDetector.Language.JAPANESE -> "jf_nezumi"   // 日文女声
             LanguageDetector.Language.KOREAN -> "kr_default"    // 韩文（预留）

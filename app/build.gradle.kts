@@ -68,9 +68,6 @@ dependencies {
     // Kuromoji 日语分词器（汉字→假名）
     implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
     
-    // TinyPinyin 中文拼音库（汉字→拼音）
-    implementation("com.github.promeg:tinypinyin:2.0.3")
-    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -47109,3 +47109,9 @@
 龟龙片甲	guī lóng piàn jiǎ
 龟龙鳞凤	guī lóng lín fèng
 龟龙麟凤	guī lóng lín fèng
+机器学习	jī qì xué xí
+深度学习	shēn dù xué xí
+人工智能	rén gōng zhì néng
+神经网络	shén jīng wǎng luò
+大数据	dà shù jù
+云计算	yún jì suàn

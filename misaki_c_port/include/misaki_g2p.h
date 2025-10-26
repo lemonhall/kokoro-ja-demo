@@ -156,12 +156,14 @@ char* misaki_ja_kana_to_ipa(const char *kana);
 /**
  * 日文 G2P 转换（完整流程：分词 + G2P）
  * 
+ * @param dict_trie 词典 Trie 树（用于查询读音）
  * @param tokenizer 日文分词器
  * @param text 日文文本
  * @param options G2P 选项（可为 NULL）
  * @return Token 列表（每个 Token 包含音素），失败返回 NULL
  */
-MisakiTokenList* misaki_ja_g2p(void *tokenizer,
+MisakiTokenList* misaki_ja_g2p(const Trie *dict_trie,
+                               void *tokenizer,
                                const char *text,
                                const G2POptions *options);
 

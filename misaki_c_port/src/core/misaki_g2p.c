@@ -271,24 +271,79 @@ int misaki_count_phonemes(const char *phonemes) {
         return 0;
     }
     
-    // 简化：按空格分割计数
-    int count = 0;
-    const char *p = phonemes;
-    bool in_phoneme = false;
+    // ⭐ 修复：正确计算 IPA 音素数量
+    // 方案：按空格分割 OR 计算 UTF-8 字符数
+    // 对于日文（连续 IPA）：计算基础音素字符数
+    // 对于中文（空格分隔）：按空格计数
     
-    while (*p) {
+    // 检测是否有空格（中文模式）
+    bool has_space = false;
+    for (const char *p = phonemes; *p; p++) {
         if (*p == ' ' || *p == '\t') {
-            in_phoneme = false;
-        } else {
-            if (!in_phoneme) {
-                count++;
-                in_phoneme = true;
-            }
+            has_space = true;
+            break;
         }
-        p++;
     }
     
-    return count;
+    if (has_space) {
+        // 中文模式：按空格分割计数
+        int count = 0;
+        const char *p = phonemes;
+        bool in_phoneme = false;
+        
+        while (*p) {
+            if (*p == ' ' || *p == '\t') {
+                in_phoneme = false;
+            } else {
+                if (!in_phoneme) {
+                    count++;
+                    in_phoneme = true;
+                }
+            }
+            p++;
+        }
+        
+        return count;
+    } else {
+        // 日文/英文模式：计算 IPA 基础字符数
+        // 过滤掉组合符号（如长音符 ː、变音符等）
+        int count = 0;
+        const char *p = phonemes;
+        
+        while (*p) {
+            uint32_t codepoint;
+            int bytes = misaki_utf8_decode(p, &codepoint);
+            if (bytes == 0) break;
+            
+            // 过滤组合符号：
+            // - 长音符 ː (U+02D0)
+            // - 声调符号（↑ ↗ ↓ ↘ →）
+            // - IPA 变音符号（ʰ-˿, ̀-ͯ）
+            bool is_modifier = false;
+            
+            // 长音符
+            if (codepoint == 0x02D0) {
+                is_modifier = true;
+            }
+            // 箭头符号（声调）
+            else if (codepoint >= 0x2190 && codepoint <= 0x21FF) {
+                is_modifier = true;
+            }
+            // IPA 变音符号
+            else if ((codepoint >= 0x02B0 && codepoint <= 0x02FF) ||
+                     (codepoint >= 0x0300 && codepoint <= 0x036F)) {
+                is_modifier = true;
+            }
+            
+            if (!is_modifier) {
+                count++;
+            }
+            
+            p += bytes;
+        }
+        
+        return count;
+    }
 }
 
 int misaki_split_phonemes(const char *phonemes,

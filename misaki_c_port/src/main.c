@@ -348,47 +348,13 @@ void process_text(MisakiApp *app, const char *text) {
             break;
             
         case LANG_JAPANESE:
-            if (app->ja_tokenizer) {
+            if (app->ja_tokenizer && app->ja_trie) {
                 printf("🔤 日文 G2P 转换中...\n\n");
                 
-                // 先分词
-                tokens = misaki_ja_tokenize(app->ja_tokenizer, text);
-                if (tokens && app->ja_trie) {
-                    // 为每个 token 查询读音并转换为 IPA
-                    for (int i = 0; i < tokens->count; i++) {
-                        MisakiToken *token = &tokens->tokens[i];
-                        
-                        // 从词典查询读音
-                        const char *pron = NULL;
-                        double freq = 0;
-                        const char *tag = NULL;
-                        
-                        bool found = misaki_trie_lookup_with_pron(
-                            app->ja_trie, token->text, &pron, &freq, &tag);
-                        
-                        if (found && pron) {
-                            // 片假名→IPA
-                            char *phonemes = misaki_ja_kana_to_ipa(pron);
-                            if (phonemes) {
-                                if (token->phonemes) {
-                                    free(token->phonemes);
-                                }
-                                token->phonemes = phonemes;
-                            }
-                        } else {
-                            // 未找到读音，尝试直接转换（对假名有效）
-                            char *phonemes = misaki_ja_kana_to_ipa(token->text);
-                            if (phonemes) {
-                                if (token->phonemes) {
-                                    free(token->phonemes);
-                                }
-                                token->phonemes = phonemes;
-                            }
-                        }
-                    }
-                }
+                // ⭐ 使用统一的 G2P 函数
+                tokens = misaki_ja_g2p(app->ja_trie, app->ja_tokenizer, text, &options);
             } else {
-                printf("❌ 日文分词器未加载\n");
+                printf("❌ 日文分词器或词典未加载\n");
             }
             break;
             

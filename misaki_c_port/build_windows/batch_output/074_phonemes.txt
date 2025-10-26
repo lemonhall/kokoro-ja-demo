@@ -1,0 +1,3 @@
+输入文本: 感谢您的支持与理解
+C版本音素: ka↓nɕiɛ↘ni↗n tɤ ꭧɨ→ꭧʰɨ↗ y↗ li↓tɕiɛ↓
+Python版本音素: ka↓nɕje↘ni↗n tɤ ꭧɨ→ꭧʰɨ↗ y↓ li↓ʨje↓

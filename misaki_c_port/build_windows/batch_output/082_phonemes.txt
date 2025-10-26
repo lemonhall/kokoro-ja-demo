@@ -1,0 +1,3 @@
+输入文本: 一万五千块钱
+C版本音素: i→ua↘nu↓tɕʰiɛ→n kʰuaɪ↘tɕʰiɛ↗n
+Python版本音素: i→wa↘nu↓ʨʰjɛ→n kʰwai↘ʨʰjɛ↗n

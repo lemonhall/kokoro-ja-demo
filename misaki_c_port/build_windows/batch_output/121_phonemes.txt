@@ -1,0 +1,3 @@
+输入文本: 今天明天后天大后天
+C版本音素: tɕi→ntʰiɛ→n mi↗ŋtʰiɛ→n xɤʊ↘tʰiɛ→n tɑ↘xɤʊ↘tʰiɛ→n
+Python版本音素: ʨi→ntʰjɛ→n mi↗ŋtʰjɛ→n xou↘tʰjɛ→n ta↘xou↘tʰjɛ→n

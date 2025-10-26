@@ -1,0 +1,3 @@
+输入文本: 木有问题
+C版本音素: mu↘iɤʊ↓ uə↘ntʰi↗
+Python版本音素: mu↘jou↓ wə↘ntʰi↗

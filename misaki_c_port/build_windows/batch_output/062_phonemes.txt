@@ -1,0 +1,3 @@
+输入文本: 还有还钱的事
+C版本音素: xaɪ↗iɤʊ↓ xaɪ↗ tɕʰiɛ↗n tɤ ʂɨ↘
+Python版本音素: xai↗jou↓ xai↗ ʨʰjɛ↗n tɤ ʂɨ↘

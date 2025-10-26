@@ -1,0 +1,3 @@
+输入文本: 广东广西福建江西
+C版本音素: kuɑ↓ŋtʊ→ŋ kuɑ↓ŋɕi→ fu↗tɕiɛ↘n tɕiɑ→ŋɕi→
+Python版本音素: kwa↓ŋtʊ→ŋ kwa↓ŋɕi→ fu↗ʨjɛ↘n ʨja→ŋɕi→

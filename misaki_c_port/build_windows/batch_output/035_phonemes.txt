@@ -1,0 +1,3 @@
+输入文本: 安然间断，反感长江
+C版本音素: a→nɻa↗n tɕiɛ↘ntua↘n fa↓nka↓n ꭧʰɑ↗ŋtɕiɑ→ŋ
+Python版本音素: a→nɻa↗n ʨjɛ↘ntwa↘n, fa↓nka↓n ꭧʰa↗ŋʨja→ŋ

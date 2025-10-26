@@ -1,0 +1,3 @@
+输入文本: 快点快点快一点
+C版本音素: kʰuaɪ↘tiɛn↗ kʰuaɪ↘tiɛ↓n kʰuaɪ↘ i↘tiɛ↓n
+Python版本音素: kʰwai↘tjɛ↓n kʰwai↘tjɛ↓n kʰwai↘ i↘tjɛ↓n

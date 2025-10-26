@@ -1,0 +1,3 @@
+输入文本: 导航已为您规划最优路线
+C版本音素: tɑʊ↓xɑ↗ŋ i↓ueɪ↘ ni↗n kueɪ→xuɑ↘ tsueɪ↘iɤʊ→ lu↘ɕiɛ↘n
+Python版本音素: tau↓xa↗ŋ i↓wei↘ ni↗n kwei→xwa↘ ʦwei↘jou→ lu↘ɕjɛ↘n

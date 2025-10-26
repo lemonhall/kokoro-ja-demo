@@ -1,0 +1,3 @@
+输入文本: 千钧一发刻不容缓
+C版本音素: tɕʰiɛ→ntɕuə→ni→fɑ↘ kʰɤ↘pu↘ɻʊ↗ŋxua↓n
+Python版本音素: ʨʰjɛ→nʨy→ni→fa↘ kʰɤ↘pu↘ɻʊ↗ŋxwa↓n

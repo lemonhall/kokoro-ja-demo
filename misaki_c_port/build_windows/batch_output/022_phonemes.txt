@@ -1,0 +1,3 @@
+输入文本: 他说的话我听不懂
+C版本音素: tʰɑ→ ʂuo→ tɤxuɑ↘ uo↓ tʰi→ŋpu↘tʊ↓ŋ
+Python版本音素: tʰa→ ʂwo→ tɤxwa↘ wo↓ tʰi→ŋpu↘tʊ↓ŋ

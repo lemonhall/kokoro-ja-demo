@@ -1,0 +1,3 @@
+输入文本: 不对不是不会
+C版本音素: pu↗tueɪ↘ pu↗ʂɨ↘ pu↗xueɪ↘
+Python版本音素: pu↘ twei↘ pu↗ʂɨ↘ pu↗xwei↘

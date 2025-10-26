@@ -1,0 +1,3 @@
+输入文本: 太棒了真的太棒了
+C版本音素: tʰaɪ↘pɑ↘ŋlɤ ꭧə→ntɤ tʰaɪ↘pɑ↘ŋlɤ
+Python版本音素: tʰai↘pa↘ŋlɤ ꭧə→ntɤ tʰai↘pa↘ŋlɤ

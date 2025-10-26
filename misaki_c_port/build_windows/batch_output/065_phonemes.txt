@@ -1,0 +1,3 @@
+输入文本: 虚心学习需要努力
+C版本音素: ɕu→ɕi→nɕyɛ↗ɕi↗ ɕu→iɑʊ↘ nu↓li↘
+Python版本音素: ɕy→ɕi→nɕɥe↗ɕi↗ ɕy→jau↘ nu↓li↘

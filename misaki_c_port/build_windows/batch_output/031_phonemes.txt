@@ -1,0 +1,3 @@
+输入文本: 我很好你也很好
+C版本音素: uo↗ xən↗ xɑʊ↗ ni↗ iɛ↗ xən↗ xɑʊ↓
+Python版本音素: wo↓ xə↓n xau↓ ni↓ je↓ xə↓n xau↓

@@ -1,0 +1,3 @@
+输入文本: 买水果买苹果买香蕉
+C版本音素: maɪ↗ ʂueɪkuo↓↗ maɪ↓ pʰi↗ŋkuo↓ maɪ↓ ɕiɑ→ŋtɕiɑʊ→
+Python版本音素: mai↓ ʂwei↓kwo↓ mai↓ pʰi↗ŋkwo↓ mai↓ ɕja→ŋʨjau→

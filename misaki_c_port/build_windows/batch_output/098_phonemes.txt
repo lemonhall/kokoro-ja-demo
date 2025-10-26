@@ -1,0 +1,3 @@
+输入文本: 披萨和汉堡
+C版本音素: pʰi→sɑ↘ xɤ↗ xa↘npɑʊ↓
+Python版本音素: pʰi→sa↘ xɤ↗ xa↘npau↓

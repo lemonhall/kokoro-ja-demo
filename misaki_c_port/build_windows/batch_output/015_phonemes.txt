@@ -1,0 +1,3 @@
+输入文本: 心灵深处感受温暖
+C版本音素: ɕi→nli↗ŋʂə→nꭧʰu↘ ka↓nʂɤʊ↘ uə→nnua↓n
+Python版本音素: ɕi→nli↗ŋʂə→nꭧʰu↘ ka↓nʂou↘ wə→nnwa↓n

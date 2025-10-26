@@ -1,0 +1,3 @@
+输入文本: 虽然很累但是还是坚持完成了任务
+C版本音素: sueɪ→ɻa↗n xə↓nleɪ↘ ta↘nʂɨ↘ xaɪ↗ʂɨ↘ tɕiɛ→nꭧʰɨ↗ ua↗nꭧʰə↗ŋ lɤ ɻə↘nu↘
+Python版本音素: swei→ɻa↗n xə↓nlei↘ ta↘nʂɨ↘ xai↗ʂɨ↘ ʨjɛ→nꭧʰɨ↗ wa↗nꭧʰə↗ŋ lɤ ɻə↘nu↘

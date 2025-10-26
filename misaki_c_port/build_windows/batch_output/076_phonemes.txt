@@ -1,0 +1,3 @@
+输入文本: 一百二十三个苹果
+C版本音素: i↘paɪ↓ sa→nkɤ↘ pʰi↗ŋkuo↓
+Python版本音素: i↘pai↓ɚ↘ʂɨ↗ sa→nkɤ↘ pʰi↗ŋkwo↓

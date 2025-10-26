@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS音频对比审听工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .case-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .case-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .input-text {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .phoneme-section {
+            margin-top: 15px;
+        }
+
+        .phoneme-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .phoneme-text {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: #666;
+            word-break: break-all;
+            border-left: 4px solid #667eea;
+        }
+
+        .phoneme-text.python {
+            border-left-color: #764ba2;
+        }
+
+        .audio-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .audio-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .audio-box h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .audio-box.c-version h3 {
+            color: #667eea;
+        }
+
+        .audio-box.py-version h3 {
+            color: #764ba2;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .review-section {
+            background: #fff9e6;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .review-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .review-btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .review-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .review-btn.c-ok {
+            background: #4caf50;
+            color: white;
+        }
+
+        .review-btn.c-fail {
+            background: #ff9800;
+            color: white;
+        }
+
+        .review-btn.both-fail {
+            background: #f44336;
+            color: white;
+        }
+
+        .review-btn.active {
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+
+        .note-area {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .note-area:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 18px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎧 TTS音频对比审听工具</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    总用例: <span id="totalCases">0</span>
+                </div>
+                <div class="stat-item">
+                    已审听: <span id="reviewedCount">0</span>
+                </div>
+                <div class="stat-item">
+                    C版本OK: <span id="cOkCount">0</span>
+                </div>
+                <div class="stat-item">
+                    C版本不OK: <span id="cFailCount">0</span>
+                </div>
+                <div class="stat-item">
+                    两者都不OK: <span id="bothFailCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="case-info">
+                <div class="case-number" id="caseNumber">加载中...</div>
+                <div class="input-text" id="inputText"></div>
+                
+                <div class="phoneme-section">
+                    <div class="phoneme-label">C版本音素:</div>
+                    <div class="phoneme-text" id="cPhonemes"></div>
+                </div>
+                
+                <div class="phoneme-section" style="margin-top: 15px;">
+                    <div class="phoneme-label">Python版本音素:</div>
+                    <div class="phoneme-text python" id="pyPhonemes"></div>
+                </div>
+            </div>
+
+            <div class="audio-section">
+                <div class="audio-box c-version">
+                    <h3>🎵 C版本音频</h3>
+                    <audio id="cAudio" controls></audio>
+                </div>
+                <div class="audio-box py-version">
+                    <h3>🎵 Python版本音频</h3>
+                    <audio id="pyAudio" controls></audio>
+                </div>
+            </div>
+
+            <div class="review-section">
+                <h3>📝 评价与备注</h3>
+                <div class="button-group">
+                    <button class="review-btn c-ok" onclick="selectStatus('c_ok')">
+                        ✓ C版本OK
+                    </button>
+                    <button class="review-btn c-fail" onclick="selectStatus('c_fail')">
+                        ⚠ C版本不OK
+                    </button>
+                    <button class="review-btn both-fail" onclick="selectStatus('both_fail')">
+                        ✗ 两者都不OK
+                    </button>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4caf50;"></div>
+                        <span>C版本达标</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff9800;"></div>
+                        <span>C版本有问题</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f44336;"></div>
+                        <span>两版本都有问题</span>
+                    </div>
+                </div>
+                <textarea 
+                    class="note-area" 
+                    id="noteInput" 
+                    placeholder="备注（可选）：描述问题详情，如发音错误、声调不对等..."
+                    onchange="autoSave()"></textarea>
+            </div>
+
+            <div class="navigation">
+                <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">
+                    ← 上一组
+                </button>
+                <div class="page-info">
+                    <span id="currentIndex">1</span> / <span id="totalPages">0</span>
+                </div>
+                <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
+                    下一组 →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="save-indicator" id="saveIndicator">
+        ✓ 已保存
+    </div>
+
+    <script>
+        let currentIndex = 0;
+        let totalCases = 0;
+        let currentStatus = null;
+
+        // 页面加载时初始化
+        window.onload = function() {
+            loadCase(0);
+            updateStats();
+        };
+
+        // 加载指定索引的用例
+        function loadCase(index) {
+            fetch(`/api/case/${index}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('无法加载用例');
+                        return;
+                    }
+
+                    currentIndex = index;
+                    
+                    // 更新显示
+                    document.getElementById('caseNumber').textContent = 
+                        `测试用例 #${data.id}`;
+                    document.getElementById('inputText').textContent = data.input_text;
+                    document.getElementById('cPhonemes').textContent = data.c_phonemes;
+                    document.getElementById('pyPhonemes').textContent = data.py_phonemes;
+                    
+                    // 设置音频
+                    document.getElementById('cAudio').src = `/audio/${data.c_audio}`;
+                    document.getElementById('pyAudio').src = `/audio/${data.py_audio}`;
+                    
+                    // 加载已有评价
+                    if (data.review && data.review.status) {
+                        selectStatus(data.review.status, false);
+                        document.getElementById('noteInput').value = data.review.note || '';
+                    } else {
+                        clearStatus();
+                        document.getElementById('noteInput').value = '';
+                    }
+                    
+                    // 更新导航按钮
+                    updateNavigation();
+                    
+                    // 更新进度条
+                    updateProgress();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('加载失败');
+                });
+        }
+
+        // 选择评价状态
+        function selectStatus(status, save = true) {
+            currentStatus = status;
+            
+            // 移除所有active类
+            document.querySelectorAll('.review-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 添加active类到选中的按钮
+            const buttons = {
+                'c_ok': document.querySelector('.review-btn.c-ok'),
+                'c_fail': document.querySelector('.review-btn.c-fail'),
+                'both_fail': document.querySelector('.review-btn.both-fail')
+            };
+            
+            if (buttons[status]) {
+                buttons[status].classList.add('active');
+            }
+            
+            if (save) {
+                autoSave();
+            }
+        }
+
+        // 清除状态选择
+        function clearStatus() {
+            currentStatus = null;
+            document.querySelectorAll('.review-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+
+        // 自动保存
+        function autoSave() {
+            if (!currentStatus) return;
+            
+            const note = document.getElementById('noteInput').value;
+            
+            fetch('/api/review', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: document.getElementById('caseNumber').textContent.split('#')[1],
+                    status: currentStatus,
+                    note: note,
+                    timestamp: new Date().toISOString()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showSaveIndicator();
+                updateStats();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // 显示保存提示
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.style.display = 'block';
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 2000);
+        }
+
+        // 导航
+        function navigate(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < totalCases) {
+                loadCase(newIndex);
+            }
+        }
+
+        // 更新导航按钮状态
+        function updateNavigation() {
+            fetch('/api/case/0')
+                .then(response => response.json())
+                .then(() => {
+                    // 获取总数
+                    return fetch('/api/stats');
+                })
+                .then(response => response.json())
+                .then(stats => {
+                    totalCases = stats.total;
+                    document.getElementById('currentIndex').textContent = currentIndex + 1;
+                    document.getElementById('totalPages').textContent = totalCases;
+                    
+                    document.getElementById('prevBtn').disabled = currentIndex === 0;
+                    document.getElementById('nextBtn').disabled = currentIndex === totalCases - 1;
+                });
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(stats => {
+                    const progress = stats.total > 0 ? (stats.reviewed / stats.total * 100) : 0;
+                    document.getElementById('progressFill').style.width = progress + '%';
+                });
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(stats => {
+                    document.getElementById('totalCases').textContent = stats.total;
+                    document.getElementById('reviewedCount').textContent = stats.reviewed;
+                    document.getElementById('cOkCount').textContent = stats.c_ok;
+                    document.getElementById('cFailCount').textContent = stats.c_fail;
+                    document.getElementById('bothFailCount').textContent = stats.both_fail;
+                });
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                navigate(-1);
+            } else if (e.key === 'ArrowRight') {
+                navigate(1);
+            } else if (e.key === '1') {
+                selectStatus('c_ok');
+            } else if (e.key === '2') {
+                selectStatus('c_fail');
+            } else if (e.key === '3') {
+                selectStatus('both_fail');
+            }
+        });
+    </script>
+</body>
+</html>

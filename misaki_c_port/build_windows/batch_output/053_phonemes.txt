@@ -1,0 +1,3 @@
+输入文本: 时间过得真快啊
+C版本音素: ʂɨ↗tɕiɛ→n kuo↘tɤ↗ ꭧə→nkʰuaɪ↘ ɑ
+Python版本音素: ʂɨ↗ʨjɛ→n kwo↘tɤ↗ ꭧə→nkʰwai↘ a

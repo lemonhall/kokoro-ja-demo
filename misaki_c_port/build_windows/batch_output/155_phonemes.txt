@@ -1,0 +1,3 @@
+输入文本: 算了算了不说了
+C版本音素: sua↘nlɤ lɤ pu↘ ʂuo→ lɤ
+Python版本音素: swa↘nlɤswa↘n lɤ pu↘ ʂwo→ lɤ

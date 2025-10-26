@@ -1,0 +1,3 @@
+输入文本: 叮叮当当响个不停
+C版本音素: ti→ŋti→ŋtɑ→ŋtɑ→ŋ ɕiɑ↓ŋkɤ↘ pu↘tʰi↗ŋ
+Python版本音素: ti→ŋti→ŋta→ŋta→ŋ ɕja↓ŋkɤ↘ pu↘tʰi↗ŋ

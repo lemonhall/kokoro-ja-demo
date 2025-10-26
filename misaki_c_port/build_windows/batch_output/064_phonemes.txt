@@ -1,0 +1,3 @@
+输入文本: 女儿去旅游玩绿色
+C版本音素: ny↓ɚ↗ tɕʰu↘ ly↓iɤʊ↗ ua↗n ly↘sɤ↘
+Python版本音素: ny↓ɚ↗ ʨʰy↘ ly↓jou↗ wa↗n ly↘sɤ↘

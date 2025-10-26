@@ -1,0 +1,3 @@
+输入文本: 明天我们去爬山
+C版本音素: mi↗ŋtʰiɛ→n uo↓mən tɕʰu↘ pʰɑ↗ʂa→n
+Python版本音素: mi↗ŋtʰjɛ→n wo↓mən ʨʰy↘ pʰa↗ʂa→n

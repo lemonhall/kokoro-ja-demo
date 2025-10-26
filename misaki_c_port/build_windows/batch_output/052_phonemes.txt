@@ -1,0 +1,3 @@
+输入文本: 经营一家餐厅
+C版本音素: tɕi→ŋi↗ŋ i↘tɕiɑ→ tsʰa→ntʰi→ŋ
+Python版本音素: ʨi→ŋi↗ŋ i→ʨja→ ʦʰa→ntʰi→ŋ

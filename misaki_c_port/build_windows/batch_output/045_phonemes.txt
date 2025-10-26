@@ -1,0 +1,3 @@
+输入文本: 问问文文云云
+C版本音素: uə↘nuə↘n uə↗nuə↗n y↗ny↗n
+Python版本音素: wə↘nwə↘n wə↗nwə↗n y↗ny↗n

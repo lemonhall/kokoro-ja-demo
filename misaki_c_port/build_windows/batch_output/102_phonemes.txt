@@ -1,0 +1,3 @@
+输入文本: 东北西北东南西南
+C版本音素: tʊ→ŋpeɪ↓ ɕi→peɪ↓ tʊ→ŋna↗n ɕi→na↗n
+Python版本音素: tʊ→ŋpei↓ ɕi→pei↓ tʊ→ŋna↗n ɕi→na↗n

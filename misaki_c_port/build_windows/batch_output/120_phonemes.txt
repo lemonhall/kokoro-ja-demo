@@ -1,0 +1,3 @@
+输入文本: 不仅而且并且以及
+C版本音素: pu↘tɕi↓n ɚ↗tɕʰiɛ↓ pi↘ŋtɕʰiɛ↓ i↓tɕi↗
+Python版本音素: pu↘ʨi↓n ɚ↗ʨʰje↓ pi↘ŋʨʰje↓ i↓ʨi↗

@@ -1,0 +1,3 @@
+输入文本: 昨天前天大前天
+C版本音素: tsuo↗tʰiɛ→n tɕʰiɛ↗ntʰiɛ→n tɑ↘tɕʰiɛ↗ntʰiɛ→n
+Python版本音素: ʦwo↗tʰjɛ→n ʨʰjɛ↗ntʰjɛ→n ta↘ʨʰjɛ↗ntʰjɛ→n

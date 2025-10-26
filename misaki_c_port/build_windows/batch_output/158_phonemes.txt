@@ -1,0 +1,3 @@
+输入文本: 根据相关规定执行
+C版本音素: kə→ntɕu↘ ɕiɑ→ŋkua→n kueɪ→ti↘ŋ ꭧɨ↗ɕi↗ŋ
+Python版本音素: kə→nʨy↘ ɕja→ŋkwa→n kwei→ti↘ŋ ꭧɨ↗ɕi↗ŋ

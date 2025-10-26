@@ -1,0 +1,3 @@
+输入文本: 循序渐进脚踏实地
+C版本音素: ɕuə↗nɕu↘tɕiɛ↘ntɕi↘n tɕiɑʊ↓tʰɑ↘ʂɨ↗ti↘
+Python版本音素: ɕy↗nɕy↘ʨjɛ↘nʨi↘n ʨjau↓tʰa↘ʂɨ↗ti↘

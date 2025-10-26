@@ -1,0 +1,3 @@
+输入文本: 第一名第二名第三名
+C版本音素: ti↘i↘mi↗ŋ ti↘ɚ↘mi↗ŋ ti↘sa→nmi↗ŋ
+Python版本音素: ti↘i↘mi↗ŋ ti↘ɚ↘mi↗ŋ ti↘sa→nmi↗ŋ

@@ -1,0 +1,3 @@
+输入文本: 最好最快最强
+C版本音素: tsueɪ↘xɑʊ↓ tsueɪ↘kʰuaɪ↘ tsueɪ↘tɕʰiɑ↗ŋ
+Python版本音素: ʦwei↘xau↓ ʦwei↘kʰwai↘ ʦwei↘ʨʰja↗ŋ

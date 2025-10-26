@@ -1,0 +1,3 @@
+输入文本: 跑过来走过去
+C版本音素: pʰɑʊ↓kuo↘laɪ↗ tsɤʊ↓kuo↘ tɕʰu↘
+Python版本音素: pʰau↓kwo↘lai↗ ʦou↓ kwo↘ʨʰy↘

@@ -1,0 +1,3 @@
+输入文本: 你去哪里干什么
+C版本音素: ni↓ tɕʰu↘ nɑ↗li↓ ka↘nʂə↗nmɤ
+Python版本音素: ni↓ ʨʰy↘ na↓li↓ ka↘nʂə↗nmɤ

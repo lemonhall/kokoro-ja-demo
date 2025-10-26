@@ -1,0 +1,3 @@
+输入文本: 哎呀不好意思啊
+C版本音素: aɪ→iɑ→ pu↘xɑʊ↓i↘sɨ→ ɑ
+Python版本音素: ai→ja→ pu↘xau↓i↘sɨ→ a

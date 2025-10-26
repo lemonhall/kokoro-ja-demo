@@ -1,0 +1,3 @@
+输入文本: 哗啦哗啦下雨了
+C版本音素: xuɑ→lɑ→ ɕiɑ↘y↓ lɤ
+Python版本音素: xwa→la→xwa→la→ ɕja↘y↓ lɤ

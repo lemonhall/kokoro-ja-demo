@@ -1,0 +1,3 @@
+输入文本: 月亮在天上挂着
+C版本音素: yɛ↘liɑ↘ŋ tsaɪ↘ tʰiɛ→nʂɑ↘ŋ kuɑ↘ ꭧɤ
+Python版本音素: ɥe↘lja↘ŋ ʦai↘ tʰjɛ→nʂa↘ŋ kwa↘ ꭧɤ

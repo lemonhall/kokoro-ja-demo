@@ -1,0 +1,3 @@
+输入文本: 一心一意全力以赴
+C版本音素: i↘ɕi→ni↗i↘ tɕʰua↗nli↘i↓fu↘
+Python版本音素: i↘ɕi→ni↗i↘ ʨʰɥɛ↗nli↘i↓fu↘

@@ -1,0 +1,3 @@
+输入文本: 不仅学习好而且身体也很健康
+C版本音素: pu↘tɕi↓n ɕyɛ↗ɕi↗ xɑʊ↓ ɚ↗tɕʰiɛ↓ ʂə→ntʰi↓ iɛ↗ xə↓n tɕiɛ↘nkʰɑ→ŋ
+Python版本音素: pu↘ʨi↓n ɕɥe↗ɕi↗ xau↓ ɚ↗ʨʰje↓ ʂə→ntʰi↓ je↓ xə↓n ʨjɛ↘nkʰa→ŋ

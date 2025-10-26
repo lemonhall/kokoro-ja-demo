@@ -1,0 +1,3 @@
+输入文本: 唉真是没办法
+C版本音素: aɪ→ ꭧə→nʂɨ↘ meɪ↗pa↘n fɑ↓
+Python版本音素: ai→ ꭧə→nʂɨ↘ mei↗ pa↘nfa↓

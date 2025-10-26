@@ -1,0 +1,3 @@
+输入文本: 井井有条有条不紊
+C版本音素: tɕi↓ŋtɕi↓ŋiɤʊ↓tʰiɑʊ↗ iɤʊ↓tʰiɑʊ↗pu↘uə↓n
+Python版本音素: ʨi↓ŋʨi↓ŋjou↓tʰjau↗ jou↓tʰjau↗pu↘wə↓n

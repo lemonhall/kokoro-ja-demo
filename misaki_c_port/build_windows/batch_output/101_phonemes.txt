@@ -1,0 +1,3 @@
+输入文本: 泰山华山衡山
+C版本音素: tʰaɪ↘ʂa→n xuɑ↘ʂa→n xə↗ŋʂa→n
+Python版本音素: tʰai↘ʂa→n xwa↘ʂa→n xə↗ŋʂa→n

@@ -1,0 +1,3 @@
+输入文本: 风和日丽春暖花开
+C版本音素: fə→ŋxɤ↗ɻɨ↘li↘ ꭧʰuə→nnua↓nxuɑ→kʰaɪ→
+Python版本音素: fə→ŋxɤ↗ɻɨ↘li↘ ꭧʰwə→nnwa↓nxwa→kʰai→

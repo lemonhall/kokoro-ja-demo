@@ -1,0 +1,3 @@
+输入文本: 打卡网红咖啡店
+C版本音素: tɑ↓kʰɑ↓ uɑ↓ŋxʊ↗ŋ kʰɑ→feɪ→tiɛ↘n
+Python版本音素: ta↓kʰa↓ wa↓ŋxʊ↗ŋ kʰa→fei→tjɛ↘n

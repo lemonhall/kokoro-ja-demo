@@ -1,0 +1,3 @@
+输入文本: 春天来了万物复苏
+C版本音素: ꭧʰuə→ntʰiɛ→n laɪ↗ lɤ ua↘nu↘ fu↘su→
+Python版本音素: ꭧʰwə→ntʰjɛ→n lai↗ lɤ wa↘nu↘ fu↘su→

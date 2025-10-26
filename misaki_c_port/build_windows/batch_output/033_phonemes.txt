@@ -1,0 +1,3 @@
+输入文本: 老李老王老张都来了
+C版本音素: lɑʊ↓li↓ lɑʊ↓uɑ↗ŋ lɑʊ↓ꭧɑ→ŋ tɤʊ→ laɪ↗ lɤ
+Python版本音素: lau↓li↓ lau↓wa↗ŋ lau↓ꭧa→ŋ tou→ lai↗ lɤ

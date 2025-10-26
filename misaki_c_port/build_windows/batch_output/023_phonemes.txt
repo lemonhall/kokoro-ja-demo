@@ -1,0 +1,3 @@
+输入文本: 桌子上摆着苹果
+C版本音素: ꭧuo→tsɨ ʂɑ↘ŋ paɪ↓ ꭧɤ pʰi↗ŋkuo↓
+Python版本音素: ꭧwo→ʦɨ ʂa↘ŋ pai↓ ꭧɤ pʰi↗ŋkwo↓

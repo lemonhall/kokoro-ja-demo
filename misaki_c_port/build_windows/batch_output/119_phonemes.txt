@@ -1,0 +1,3 @@
+输入文本: 无论还是或者以及
+C版本音素: u↗luə↘n xaɪ↗ʂɨ↘ xuo↘ꭧɤ↓ i↓tɕi↗
+Python版本音素: u↗lwə↘n xai↗ʂɨ↘ xwo↘ꭧɤ↓ i↓ʨi↗

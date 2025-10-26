@@ -1,0 +1,3 @@
+输入文本: 这个小孩子跑得很快
+C版本音素: ꭧɤ↘kɤ ɕiɑʊ↓xaɪ↗tsɨ pʰɑʊ↓ tɤ↗ xə↓nkʰuaɪ↘
+Python版本音素: ꭧɤ↘kɤ ɕjau↓xai↗ʦɨ pʰau↓ tɤ↗ xə↓nkʰwai↘

@@ -1,0 +1,3 @@
+输入文本: 打开关上放下
+C版本音素: tɑ↓kʰaɪ→ kua→nʂɑ↘ŋ fɑ↘ŋɕiɑ↘
+Python版本音素: ta↓kʰai→ kwa→nʂa↘ŋ fa↘ŋɕja↘

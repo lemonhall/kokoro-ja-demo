@@ -1,0 +1,3 @@
+输入文本: 正在做着要去做
+C版本音素: ꭧə↘ŋtsaɪ↘ tsuo↘ ꭧɤ iɑʊ↘ tɕʰu↘ tsuo↘
+Python版本音素: ꭧə↘ŋʦai↘ ʦwo↘ ꭧɤ jau↘ ʨʰy↘ ʦwo↘

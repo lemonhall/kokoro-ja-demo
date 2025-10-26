@@ -15,4 +15,5 @@ dependencies = [
     "onnxconverter-common>=1.16.0",
     "pronouncing>=0.2.0",
     "mecab>=0.996.12",
+    "flask>=3.1.2",
 ]

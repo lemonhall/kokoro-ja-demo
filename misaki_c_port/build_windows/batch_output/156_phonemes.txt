@@ -1,0 +1,3 @@
+输入文本: 兹定于某月某日召开会议
+C版本音素: tsɨ→ ti↘ŋy↗ mɤʊ↓yɛ↘mɤʊ↓ɻɨ↘ ꭧɑʊ↘kʰaɪ→ xueɪ↘i↘
+Python版本音素: ʦɨ→ ti↘ŋy↗ mou↓ɥe↘mou↓ɻɨ↘ ꭧau↘kʰai→ xwei↘i↘

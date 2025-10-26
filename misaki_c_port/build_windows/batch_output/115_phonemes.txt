@@ -1,0 +1,3 @@
+输入文本: 嗯好的明白了
+C版本音素: ń xɑʊ↓ tɤ mi↗ŋpaɪ↗ lɤ
+Python版本音素: n↗ xau↓ tɤ mi↗ŋpai↗ lɤ

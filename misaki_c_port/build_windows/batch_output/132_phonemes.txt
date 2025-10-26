@@ -1,0 +1,3 @@
+输入文本: 又大又圆又好看
+C版本音素: iɤʊ↘ tɑ↘iɤʊ↘yɛ↗n iɤʊ↘ xɑʊ↓kʰa↘n
+Python版本音素: jou↘ ta↘jou↘ɥɛ↗n jou↘ xau↓kʰa↘n

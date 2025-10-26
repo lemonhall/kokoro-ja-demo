@@ -1,0 +1,3 @@
+输入文本: 我们的朋友们都来了
+C版本音素: uo↓mən tɤ pʰə↗ŋiɤʊ↓ mən tɤʊ→ laɪ↗ lɤ
+Python版本音素: wo↓mən tɤ pʰə↗ŋjou↓ mən tou→ lai↗ lɤ

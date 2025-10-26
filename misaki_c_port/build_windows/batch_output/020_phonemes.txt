@@ -1,0 +1,3 @@
+输入文本: 一点儿问题都没有
+C版本音素: i↘tiɛ↓n uə↘ntʰi↗ tɤʊ→ meɪ↗iɤʊ↓
+Python版本音素: i↘tjɛ↓nɚ↗ wə↘ntʰi↗ tou→ mei↗jou↓

@@ -1,0 +1,3 @@
+输入文本: 差不多差了一点
+C版本音素: ꭧʰɑ↘putuo→ ꭧʰɑ↘ lɤ i↘tiɛ↓n
+Python版本音素: ꭧʰa↘putwo→ ꭧʰa↘ lɤ i↘tjɛ↓n

@@ -1,0 +1,3 @@
+输入文本: 越来越好越来越快
+C版本音素: yɛ↘laɪ↗yɛ↘ xɑʊ↓ yɛ↘laɪ↗yɛ↘kʰuaɪ↘
+Python版本音素: ɥe↘lai↗ɥe↘ xau↓ ɥe↘lai↗ɥe↘kʰwai↘

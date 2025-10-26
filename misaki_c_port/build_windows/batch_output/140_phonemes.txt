@@ -1,0 +1,3 @@
+输入文本: 难道不是吗
+C版本音素: na↗ntɑʊ↘ pu↗ʂɨ↘ mɑ
+Python版本音素: na↗ntau↘ pu↗ʂɨ↘ ma

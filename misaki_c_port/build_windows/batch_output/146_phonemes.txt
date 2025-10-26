@@ -1,0 +1,3 @@
+输入文本: 如果明天天气好的话我们就去公园散步
+C版本音素: ɻu↗kuo↓ mi↗ŋtʰiɛ→n tʰiɛ→ntɕʰi↘ xɑʊ↓ tɤxuɑ↘ uo↓mən tɕiɤʊ↘ tɕʰu↘ kʊ→ŋyɛ↗n sa↘npu↘
+Python版本音素: ɻu↗kwo↓ mi↗ŋtʰjɛ→n tʰjɛ→nʨʰi↘ xau↓ tɤxwa↘ wo↓mən ʨjou↘ ʨʰy↘ kʊ→ŋɥɛ↗n sa↘npu↘

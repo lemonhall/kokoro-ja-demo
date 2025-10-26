@@ -1,0 +1,3 @@
+输入文本: 聚集菊花局部曲目
+C版本音素: tɕu↘tɕi↗ tɕu↗xuɑ→ tɕu↗pu↘ tɕʰu↓mu↘
+Python版本音素: ʨy↘ʨi↗ ʨy↗xwa→ ʨy↗pu↘ ʨʰy↓mu↘

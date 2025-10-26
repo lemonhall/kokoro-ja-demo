@@ -1,0 +1,3 @@
+输入文本: 三点五公斤
+C版本音素: sa→ntiɛ↓n u↓kʊ→ŋtɕi→n
+Python版本音素: sa→ntjɛ↓n u↓kʊ→ŋʨi→n

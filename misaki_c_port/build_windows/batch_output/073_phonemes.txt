@@ -1,0 +1,3 @@
+输入文本: 请输入您的密码
+C版本音素: tɕʰi↓ŋ ʂu→ɻu↘ni↗n tɤ mi↘mɑ↓
+Python版本音素: ʨʰi↓ŋ ʂu→ɻu↘ni↗n tɤ mi↘ma↓

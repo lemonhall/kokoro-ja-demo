@@ -1,0 +1,3 @@
+输入文本: 你晓得不晓得
+C版本音素: ni↗ ɕiɑʊtɤ↗ pu↘ɕiɑʊ↓ tɤ↗
+Python版本音素: ni↓ ɕjau↓tɤ pu↘ ɕjau↓tɤ

@@ -1,0 +1,3 @@
+输入文本: 谁知道呢谁说的
+C版本音素: ʂueɪ↗ꭧɨ→ tɑʊ↘ nɤ ʂueɪ↗ ʂuo→ tɤ
+Python版本音素: ʂwei↗ ꭧɨ→tau↘ nɤ ʂwei↗ ʂwo→ tɤ

@@ -1,0 +1,3 @@
+输入文本: 新颖的设计理念
+C版本音素: ɕi→ni↓ŋ tɤ ʂɤ↘tɕi↘ li↓niɛ↘n
+Python版本音素: ɕi→ni↓ŋ tɤ ʂɤ↘ʨi↘ li↓njɛ↘n

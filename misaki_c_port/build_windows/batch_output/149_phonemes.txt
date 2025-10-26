@@ -1,0 +1,3 @@
+输入文本: 因为下雨所以比赛取消了
+C版本音素: i→nueɪ↘ ɕiɑ↘y↗ suoi↓↗ pi↓saɪ↘ tɕʰu↓ɕiɑʊ→ lɤ
+Python版本音素: i→nwei↘ ɕja↘y↓ swo↓i↓ pi↓sai↘ ʨʰy↓ɕjau→ lɤ

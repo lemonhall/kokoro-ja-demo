@@ -1,0 +1,3 @@
+输入文本: 你看看他们在干什么
+C版本音素: ni↓ kʰa↘nkʰa↘n tʰɑ→mən tsaɪ↘ ka↘nʂə↗nmɤ
+Python版本音素: ni↓ kʰa↘nkʰa↘n tʰa→mən ʦai↘ ka↘nʂə↗nmɤ

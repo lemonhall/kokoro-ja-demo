@@ -1,0 +1,3 @@
+输入文本: 我可以理解你的想法
+C版本音素: uo↓ kʰɤ↗i↓ litɕiɛ↓↗ ni↓ tɤ ɕiɑ↓ŋfɑ↓
+Python版本音素: wo↓ kʰɤ↓i↓ li↓ʨje↓ ni↓ tɤ ɕja↓ŋfa↓

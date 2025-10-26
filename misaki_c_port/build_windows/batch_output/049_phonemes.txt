@@ -1,0 +1,3 @@
+输入文本: 中国人民解放军
+C版本音素: ꭧʊ→ŋkuo↗ɻə↗nmi↗ntɕiɛ↓fɑ↘ŋtɕuə→n
+Python版本音素: ꭧʊ→ŋkwo↗ɻə↗nmi↗nʨje↓fa↘ŋʨy→n

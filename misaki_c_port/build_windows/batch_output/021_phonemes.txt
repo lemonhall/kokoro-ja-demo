@@ -1,0 +1,3 @@
+输入文本: 是不是应该好好的考虑一下
+C版本音素: ʂɨ↘pu↗ʂɨ↘ i→ŋkaɪ→ xɑʊ↗xɑʊ↓ tɤ kʰɑʊ↓ly↘i→ɕiɑ↘
+Python版本音素: ʂɨ↘pu↗ʂɨ↘ i→ŋkai→ xau↓xau↓ tɤ kʰau↓ly↘i→ɕja↘

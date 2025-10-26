@@ -1,0 +1,3 @@
+输入文本: 本能崩溃，蓬勃分明
+C版本音素: pə↓nnə↗ŋ pə→ŋkʰueɪ↘ pʰə↗ŋpo↗ fə→nmi↗ŋ
+Python版本音素: pə↓nnə↗ŋ pə→ŋkʰwei↘, pʰə↗ŋpwo↗ fə→nmi↗ŋ

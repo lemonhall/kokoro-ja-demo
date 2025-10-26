@@ -1,0 +1,3 @@
+输入文本: 虽然然而不过而且
+C版本音素: sueɪ→ɻa↗n ɻa↗nɚ↗ pu↗kuo↘ ɚ↗tɕʰiɛ↓
+Python版本音素: swei→ɻa↗n ɻa↗nɚ↗ pu↘kwo↘ ɚ↗ʨʰje↓

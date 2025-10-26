@@ -1,0 +1,3 @@
+输入文本: 你好吗好不好
+C版本音素: ni↗xɑʊ↓ mɑ xɑʊ↓pu↘xɑʊ↓
+Python版本音素: ni↓xau↓ ma xau↓pu↘xau↓

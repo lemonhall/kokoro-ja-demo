@@ -1,0 +1,3 @@
+输入文本: 看看听听说说
+C版本音素: kʰa↘nkʰa↘n tʰi→ŋtʰi→ŋ ʂuo→ ʂuo→
+Python版本音素: kʰa↘nkʰa↘n tʰi→ŋ tʰi→ŋʂwo→ ʂwo→

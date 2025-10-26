@@ -1,0 +1,3 @@
+输入文本: 淅淅沥沥的小雨
+C版本音素: ɕi→ɕi→li↘li↘ tɤ ɕiɑʊ↗y↓
+Python版本音素: ɕi→ɕi→li↘li↘ tɤ ɕjau↓y↓

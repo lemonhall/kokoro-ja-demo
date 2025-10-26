@@ -1,0 +1,3 @@
+输入文本: 对对对没错没错
+C版本音素: tueɪ↘tueɪ↘ tueɪ↘ meɪ↗tsʰuo↘ meɪ↗tsʰuo↘
+Python版本音素: twei↘ twei↘ twei↘ mei↗ʦʰwo↘ mei↗ʦʰwo↘

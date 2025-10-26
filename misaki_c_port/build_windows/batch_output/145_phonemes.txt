@@ -1,0 +1,3 @@
+输入文本: 小心注意安全
+C版本音素: ɕiɑʊ↓ɕi→n ꭧu↘i↘a→ntɕʰua↗n
+Python版本音素: ɕjau↓ɕi→n ꭧu↘i↘a→nʨʰɥɛ↗n

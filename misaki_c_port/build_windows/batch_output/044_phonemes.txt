@@ -1,0 +1,3 @@
+输入文本: 回归微微味味
+C版本音素: xueɪ↗kueɪ→ ueɪ→ueɪ→ ueɪ↘ueɪ↘
+Python版本音素: xwei↗kwei→ wei→wei→ wei↘wei↘

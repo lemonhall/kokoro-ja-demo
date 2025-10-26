@@ -1,0 +1,3 @@
+输入文本: 今天天气真不错
+C版本音素: tɕi→ntʰiɛ→ntʰiɛ→ntɕʰi↘ ꭧə→npu↘tsʰuo↘
+Python版本音素: ʨi→ntʰjɛ→ntʰjɛ→nʨʰi↘ ꭧə→npu↘ʦʰwo↘

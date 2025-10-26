@@ -1,0 +1,3 @@
+输入文本: 吃葡萄不吐葡萄皮
+C版本音素: ꭧʰɨ→ pʰu↗tʰɑʊ↗ pu↘tʰu↓ pʰu↗tʰɑʊ↗ pʰi↗
+Python版本音素: ꭧʰɨ→ pʰu↗tʰau↗ pu↘tʰu↓ pʰu↗tʰau↗ pʰi↗

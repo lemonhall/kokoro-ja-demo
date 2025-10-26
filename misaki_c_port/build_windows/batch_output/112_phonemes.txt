@@ -1,0 +1,3 @@
+输入文本: 哇塞好厉害呀
+C版本音素: uɑ→saɪ→ xɑʊ↓ li↘xaɪ↘ iɑ
+Python版本音素: wa→sai→ xau↓ li↘xai↘ ja

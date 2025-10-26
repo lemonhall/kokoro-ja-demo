@@ -1,0 +1,3 @@
+输入文本: 你们俩来这儿玩儿
+C版本音素: nimən↗ liɑ↓ laɪ↗ ꭧɤ↘ɚ↗ ua↗nɚ↗
+Python版本音素: ni↓mən lja↓ lai↗ ꭧɤ↘ɚ↗ wa↗nɚ↗

@@ -10,6 +10,7 @@
 #include "misaki_dict.h"
 #include "misaki_tokenizer.h"
 #include "misaki_string.h"
+#include "misaki_num2cn.h"  // ⭐ 新增：数字转中文
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -523,8 +524,16 @@ MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
         return NULL;
     }
     
-    // 1. 中文分词
-    MisakiTokenList *tokens = misaki_zh_tokenize(tokenizer, text);
+    // ⭐ 0. 数字预处理：将所有数字转换为中文读法
+    char processed_text[4096];
+    if (!misaki_convert_numbers_in_text(text, processed_text, sizeof(processed_text))) {
+        // 转换失败，使用原文本
+        strncpy(processed_text, text, sizeof(processed_text) - 1);
+        processed_text[sizeof(processed_text) - 1] = '\0';
+    }
+    
+    // 1. 中文分词（使用处理后的文本）
+    MisakiTokenList *tokens = misaki_zh_tokenize(tokenizer, processed_text);
     if (!tokens) {
         return NULL;
     }

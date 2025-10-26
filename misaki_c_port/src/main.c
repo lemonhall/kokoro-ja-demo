@@ -13,6 +13,7 @@
 #include "misaki_g2p.h"
 #include "misaki_trie.h"
 #include "misaki_hmm.h"  // 添加：HMM 支持
+#include "misaki_lang_detect.h"  // 添加：语言检测模块
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,9 @@ typedef struct {
     // 词汇 Trie 树
     Trie *zh_trie;
     Trie *ja_trie;
+    
+    // 语言检测器
+    LangDetector *lang_detector;
 } MisakiApp;
 
 /* ============================================================================
@@ -205,6 +209,22 @@ bool init_app(MisakiApp *app, const char *data_dir) {
         }
     }
     
+    // 5. 初始化语言检测器
+    printf("🔍 初始化语言检测器...\n");
+    LangDetectorConfig detector_config = {
+        .enable_ngram = true,
+        .enable_tokenization = false,  // 可选：启用分词质量检测
+        .confidence_threshold = 0.5f,
+        .zh_tokenizer = app->zh_tokenizer,
+        .ja_tokenizer = app->ja_tokenizer
+    };
+    app->lang_detector = misaki_lang_detector_create(&detector_config);
+    if (app->lang_detector) {
+        printf("   ✅ 语言检测器初始化成功\n");
+    } else {
+        printf("   ⚠️  语言检测器初始化失败（将使用快速检测）\n");
+    }
+    
     printf("\n");
     return true;
 }
@@ -234,70 +254,21 @@ void cleanup_app(MisakiApp *app) {
     if (app->ja_trie) {
         misaki_trie_free(app->ja_trie);
     }
+    if (app->lang_detector) {
+        misaki_lang_detector_free(app->lang_detector);
+    }
 }
 
 /* ============================================================================
- * 语言检测（改进版 - 基于统计）
+ * 语言检测封装（使用新模块）
  * ========================================================================== */
 
-MisakiLanguage detect_language_simple(const char *text) {
-    if (!text || !*text) {
-        return LANG_UNKNOWN;
-    }
-    
-    int hiragana_count = 0;  // 平假名
-    int katakana_count = 0;  // 片假名
-    int kanji_count = 0;     // 汉字（CJK）
-    int latin_count = 0;     // 拉丁字母
-    int other_count = 0;     // 其他
-    
-    const char *p = text;
-    while (*p) {
-        uint32_t codepoint;
-        int bytes = misaki_utf8_decode(p, &codepoint);
-        if (bytes == 0) break;
-        
-        // 平假名：0x3040-0x309F
-        if (codepoint >= 0x3040 && codepoint <= 0x309F) {
-            hiragana_count++;
-        }
-        // 片假名：0x30A0-0x30FF
-        else if (codepoint >= 0x30A0 && codepoint <= 0x30FF) {
-            katakana_count++;
-        }
-        // CJK 统一汉字：0x4E00-0x9FFF
-        else if (codepoint >= 0x4E00 && codepoint <= 0x9FFF) {
-            kanji_count++;
-        }
-        // 拉丁字母
-        else if ((codepoint >= 'A' && codepoint <= 'Z') ||
-                 (codepoint >= 'a' && codepoint <= 'z')) {
-            latin_count++;
-        }
-        else {
-            other_count++;
-        }
-        
-        p += bytes;
-    }
-    
-    // 判断逻辑：
-    // 1. 如果有假名（平假名或片假名），就是日文
-    if (hiragana_count > 0 || katakana_count > 0) {
-        return LANG_JAPANESE;
-    }
-    
-    // 2. 如果只有汉字，但没有假名，判断为中文
-    if (kanji_count > 0) {
-        return LANG_CHINESE;
-    }
-    
-    // 3. 如果主要是拉丁字母，判断为英文
-    if (latin_count > 0) {
-        return LANG_ENGLISH;
-    }
-    
-    return LANG_UNKNOWN;
+/**
+ * 将新的语言类型转换为旧的枚举（兼容性）
+ */
+static MisakiLanguage convert_lang_type(MisakiLanguage new_lang) {
+    // 新模块的枚举值与旧版本兼容，直接返回
+    return new_lang;
 }
 
 /* ============================================================================
@@ -313,16 +284,44 @@ void process_text(MisakiApp *app, const char *text) {
     printf("📝 输入文本: %s\n", text);
     printf("════════════════════════════════════════════════════════════\n\n");
     
-    // 检测语言
-    MisakiLanguage lang = detect_language_simple(text);
-    const char *lang_name = "未知";
-    switch (lang) {
-        case LANG_ENGLISH: lang_name = "英文"; break;
-        case LANG_CHINESE: lang_name = "中文"; break;
-        case LANG_JAPANESE: lang_name = "日文"; break;
-        default: lang_name = "未知"; break;
+    // 检测语言（使用新模块）
+    MisakiLanguage lang;
+    float confidence = 0.0f;
+    const char *reason = "未检测";
+    
+    if (app->lang_detector) {
+        // 使用完整检测器
+        LangDetectResult result = misaki_lang_detect_full(app->lang_detector, text);
+        lang = result.language;
+        confidence = result.confidence;
+        reason = result.reason;
+        
+        printf("🌏 检测语言: %s (置信度: %.2f%%, 原因: %s)\n", 
+               misaki_language_name(lang), confidence * 100, reason);
+        
+        // 显示字符集统计
+        if (result.charset.total_chars > 0) {
+            printf("📊 字符统计: ");
+            if (result.charset.hiragana_count > 0) {
+                printf("平假名=%d ", result.charset.hiragana_count);
+            }
+            if (result.charset.katakana_count > 0) {
+                printf("片假名=%d ", result.charset.katakana_count);
+            }
+            if (result.charset.kanji_count > 0) {
+                printf("汉字=%d ", result.charset.kanji_count);
+            }
+            if (result.charset.latin_count > 0) {
+                printf("拉丁=%d ", result.charset.latin_count);
+            }
+            printf("总计=%d\n", result.charset.total_chars);
+        }
+    } else {
+        // 降级到快速检测
+        lang = misaki_lang_detect_quick(text);
+        printf("🌏 检测语言: %s (快速模式)\n", misaki_language_name(lang));
     }
-    printf("🌏 检测语言: %s\n\n", lang_name);
+    printf("\n");
     
     // 根据语言调用不同的 G2P
     MisakiTokenList *tokens = NULL;

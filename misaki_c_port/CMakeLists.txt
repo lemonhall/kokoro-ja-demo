@@ -41,6 +41,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_g2p_en.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_ja.c
     ${MISAKI_SRC_DIR}/core/misaki_kana_map.c
+    ${MISAKI_SRC_DIR}/core/misaki_lang_detect.c  # 新增：语言检测模块
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 
@@ -134,3 +135,7 @@ target_link_libraries(test_zh_full_dict misaki_static m)
 # HMM 未登录词识别测试
 add_executable(test_hmm tests/test_hmm.c)
 target_link_libraries(test_hmm misaki_static m)
+
+# 语言检测模块测试
+add_executable(test_lang_detect tests/test_lang_detect.c)
+target_link_libraries(test_lang_detect misaki_static m)

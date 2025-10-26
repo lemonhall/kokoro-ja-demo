@@ -114,7 +114,7 @@ void test_zh_g2p_full() {
     for (int i = 0; test_texts[i] != NULL; i++) {
         printf("  测试: %s\n", test_texts[i]);
         
-        MisakiTokenList *tokens = misaki_zh_g2p(dict, tokenizer, test_texts[i], NULL);
+        MisakiTokenList *tokens = misaki_zh_g2p(dict, NULL, tokenizer, test_texts[i], NULL);
         TEST_ASSERT(tokens != NULL, "G2P 结果不应为 NULL");
         
         printf("    分词结果:\n");

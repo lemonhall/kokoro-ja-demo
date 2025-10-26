@@ -28,6 +28,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_dict.c
     ${MISAKI_SRC_DIR}/core/misaki_trie.c
     ${MISAKI_SRC_DIR}/core/misaki_viterbi.c
+    ${MISAKI_SRC_DIR}/core/misaki_hmm.c  # 新增：中文 HMM 未登录词识别
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_zh.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_en.c
@@ -127,3 +128,7 @@ target_link_libraries(test_lookup_debug misaki_static m)
 # 中文大词典测试
 add_executable(test_zh_full_dict tests/test_zh_full_dict.c)
 target_link_libraries(test_zh_full_dict misaki_static m)
+
+# HMM 未登录词识别测试
+add_executable(test_hmm tests/test_hmm.c)
+target_link_libraries(test_hmm misaki_static m)

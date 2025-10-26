@@ -313,9 +313,13 @@ void misaki_g2p_print(const MisakiTokenList *tokens, bool show_details) {
     }
     
     printf("G2P Result (%d tokens):\n", tokens->count);
+    fflush(stdout);  // 强制刷新缓冲区
     for (int i = 0; i < tokens->count; i++) {
         const MisakiToken *token = &tokens->tokens[i];
-        printf("  [%d] \"%s\"", i, token->text);
+        printf("  [%d] ", i);  // 先输出索引
+        fflush(stdout);
+        printf("\"%s\"", token->text ? token->text : "(null)");  // 再输出文本
+        fflush(stdout);  // 每个 token 后刷新
         
         if (token->phonemes) {
             printf(" → %s", token->phonemes);

@@ -439,21 +439,3 @@ MisakiTokenList* misaki_tokenize(MisakiContext *context,
     return NULL;
 }
 
-/* ============================================================================
- * HMM 实现（TODO）
- * ========================================================================== */
-
-HMMModel* misaki_hmm_load(const char *file_path) {
-    (void)file_path;
-    return NULL;
-}
-
-void misaki_hmm_free(HMMModel *model) {
-    (void)model;
-}
-
-MisakiTokenList* misaki_hmm_cut(const HMMModel *model, const char *text) {
-    (void)model;
-    (void)text;
-    return NULL;
-}

@@ -125,7 +125,7 @@ void test_zh_g2p(void) {
     
     // 测试中文 G2P
     const char *text = "你好世界";
-    MisakiTokenList *tokens = misaki_zh_g2p(dict, tokenizer, text, NULL);
+    MisakiTokenList *tokens = misaki_zh_g2p(dict, NULL, tokenizer, text, NULL);
     TEST_ASSERT(tokens != NULL, "G2P 结果不应为 NULL");
     
     printf("  原文: %s\n", text);

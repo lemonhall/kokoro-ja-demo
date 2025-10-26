@@ -14,6 +14,7 @@
 #include "misaki_tokenizer.h"
 #include "misaki_string.h"
 #include "misaki_trie.h"
+#include "misaki_hmm.h"  // 添加：HMM 支持
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -25,6 +26,7 @@
 typedef struct {
     Trie *dict_trie;       // 词典 Trie 树
     Trie *user_trie;       // 用户词典（可选）
+    struct HmmModel *hmm_model;  // HMM 模型（可选）
     bool enable_hmm;       // 是否启用 HMM
     bool enable_userdict;  // 是否启用用户词典
 } ZhTokenizer;
@@ -45,6 +47,7 @@ void* misaki_zh_tokenizer_create(const ZhTokenizerConfig *config) {
     
     tokenizer->dict_trie = config->dict_trie;
     tokenizer->user_trie = config->user_trie;
+    tokenizer->hmm_model = config->hmm_model;  // 保存 HMM 模型
     tokenizer->enable_hmm = config->enable_hmm;
     tokenizer->enable_userdict = config->enable_userdict;
     
@@ -244,6 +247,79 @@ MisakiTokenList* misaki_zh_tokenize(void *tokenizer, const char *text) {
     
     free(route);
     misaki_dag_free(dag);
+    
+    // ⭐ 4. HMM 后处理：对连续的单字进行 HMM 重新切分
+    if (zh->enable_hmm && zh->hmm_model && result->count > 0) {
+        MisakiTokenList *hmm_result = misaki_token_list_create();
+        if (hmm_result) {
+            int i = 0;
+            while (i < result->count) {
+                // 检测是否是连续的单字（可能是未登录词）
+                int start = i;
+                int single_char_count = 0;
+                
+                // 统计连续单字数量
+                while (i < result->count) {
+                    const char *token_text = result->tokens[i].text;
+                    int char_len = 0;
+                    const char *p = token_text;
+                    while (*p) {
+                        uint32_t codepoint;
+                        int bytes = misaki_utf8_decode(p, &codepoint);
+                        if (bytes == 0) break;
+                        char_len++;
+                        p += bytes;
+                    }
+                    
+                    if (char_len == 1) {
+                        single_char_count++;
+                        i++;
+                    } else {
+                        break;
+                    }
+                }
+                
+                // 如果有 2 个以上连续单字，用 HMM 重新切分
+                if (single_char_count >= 2) {
+                    // 合并连续单字
+                    char oov_text[256] = {0};
+                    for (int j = start; j < start + single_char_count; j++) {
+                        strcat(oov_text, result->tokens[j].text);
+                    }
+                    
+                    // 用 HMM 切分
+                    MisakiTokenList *hmm_tokens = misaki_hmm_cut(zh->hmm_model, oov_text);
+                    if (hmm_tokens && hmm_tokens->count > 0) {
+                        // 添加 HMM 切分结果
+                        for (int j = 0; j < hmm_tokens->count; j++) {
+                            misaki_token_list_add(hmm_result, &hmm_tokens->tokens[j]);
+                        }
+                        misaki_token_list_free(hmm_tokens);
+                    } else {
+                        // HMM 失败，保持原样
+                        for (int j = start; j < start + single_char_count; j++) {
+                            misaki_token_list_add(hmm_result, &result->tokens[j]);
+                        }
+                    }
+                } else if (single_char_count > 0) {
+                    // 1 个单字，直接添加
+                    for (int j = start; j < start + single_char_count; j++) {
+                        misaki_token_list_add(hmm_result, &result->tokens[j]);
+                    }
+                } else {
+                    // 0 个单字（多字词），添加当前 token 并前进
+                    if (i < result->count) {
+                        misaki_token_list_add(hmm_result, &result->tokens[i]);
+                        i++;
+                    }
+                }
+            }
+            
+            // 替换结果
+            misaki_token_list_free(result);
+            result = hmm_result;
+        }
+    }
     
     return result;
 }

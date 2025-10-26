@@ -185,6 +185,7 @@ DAG* misaki_dag_build(const char *text, const Trie *trie);
 typedef struct {
     Trie *dict_trie;           // 词典 Trie 树（必需）
     bool enable_hmm;           // 是否启用 HMM 未登录词识别（默认 true）
+    struct HmmModel *hmm_model;  // HMM 模型（可选，前向声明）
     bool enable_userdict;      // 是否启用用户词典（默认 false）
     Trie *user_trie;           // 用户词典 Trie 树（可选）
 } ZhTokenizerConfig;
@@ -318,63 +319,6 @@ MisakiTokenList* misaki_tokenize(MisakiContext *context,
  * HMM（隐马尔可夫模型）未登录词识别
  * 用于识别词典中不存在的词（如人名、地名等）
  * ========================================================================== */
-
-/**
- * HMM 状态
- */
-typedef enum {
-    HMM_STATE_BEGIN,    // 词首
-    HMM_STATE_MIDDLE,   // 词中
-    HMM_STATE_END,      // 词尾
-    HMM_STATE_SINGLE    // 单字成词
-} HMMState;
-
-/**
- * HMM 模型
- */
-typedef struct {
-    double start_prob[4];      // 初始概率
-    double trans_prob[4][4];   // 转移概率
-    double emit_prob[4][65536]; // 发射概率（简化：只存储常用字）
-} HMMModel;
-
-/**
- * 加载 HMM 模型
- * 
- * @param file_path 模型文件路径
- * @return HMM 模型，失败返回 NULL
- */
-HMMModel* misaki_hmm_load(const char *file_path);
-
-/**
- * 释放 HMM 模型
- * 
- * @param model HMM 模型
- */
-void misaki_hmm_free(HMMModel *model);
-
-/**
- * Viterbi 算法：寻找最优状态序列
- * 
- * @param model HMM 模型
- * @param text 文本（UTF-8）
- * @param states 输出：状态序列
- * @param max_length 最大长度
- * @return 实际长度
- */
-int misaki_hmm_viterbi(const HMMModel *model,
-                       const char *text,
-                       HMMState *states,
-                       int max_length);
-
-/**
- * 使用 HMM 切分未登录词
- * 
- * @param model HMM 模型
- * @param text 文本（UTF-8）
- * @return Token 列表，失败返回 NULL
- */
-MisakiTokenList* misaki_hmm_cut(const HMMModel *model, const char *text);
 
 /* ============================================================================
  * 调试与统计

@@ -12,6 +12,7 @@
 #include "misaki_tokenizer.h"
 #include "misaki_g2p.h"
 #include "misaki_trie.h"
+#include "misaki_hmm.h"  // 添加：HMM 支持
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +29,7 @@ typedef struct {
     EnDict *en_dict_us;
     ZhDict *zh_dict;
     ZhPhraseDict *zh_phrase_dict;  // 中文词组拼音词典（解决多音字）
+    HmmModel *zh_hmm_model;        // 中文 HMM 模型（未登录词识别）
     
     // 分词器
     void *zh_tokenizer;
@@ -84,6 +86,19 @@ bool init_app(MisakiApp *app, const char *data_dir) {
         printf("   ⚠️  无法加载词组拼音词典（将使用默认单字拼音）\n");
     }
     
+    // ⭐ 2.6. 加载中文 HMM 模型（未登录词识别）
+    char zh_hmm_path[512];
+    snprintf(zh_hmm_path, sizeof(zh_hmm_path), "%s/zh/hmm_prob_emit.txt", data_dir);
+    printf("📖 加载中文 HMM 模型: %s\n", zh_hmm_path);
+    
+    app->zh_hmm_model = misaki_hmm_load(zh_hmm_path);
+    if (app->zh_hmm_model) {
+        printf("   ✅ 成功加载 HMM 模型 (%d 个字符) [未登录词识别]\n", 
+               app->zh_hmm_model->total_chars);
+    } else {
+        printf("   ⚠️  无法加载 HMM 模型（未登录词将无法处理）\n");
+    }
+    
     // 3. 加载中文词汇词典（用于分词）
     // 优先级：dict_merged.txt > dict_full.txt > dict.txt
     if (app->zh_dict) {
@@ -138,7 +153,8 @@ bool init_app(MisakiApp *app, const char *data_dir) {
             // 创建中文分词器
             ZhTokenizerConfig config = {
                 .dict_trie = app->zh_trie,
-                .enable_hmm = false,
+                .enable_hmm = true,  // 启用 HMM
+                .hmm_model = app->zh_hmm_model,  // 传入 HMM 模型
                 .enable_userdict = false,
                 .user_trie = NULL
             };
@@ -202,6 +218,9 @@ void cleanup_app(MisakiApp *app) {
     }
     if (app->zh_phrase_dict) {
         misaki_zh_phrase_dict_free(app->zh_phrase_dict);
+    }
+    if (app->zh_hmm_model) {
+        misaki_hmm_free(app->zh_hmm_model);
     }
     if (app->zh_tokenizer) {
         misaki_zh_tokenizer_free(app->zh_tokenizer);

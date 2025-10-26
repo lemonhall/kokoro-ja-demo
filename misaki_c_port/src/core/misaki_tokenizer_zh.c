@@ -147,8 +147,13 @@ static bool calculate_route(const DAG *dag, const Trie *trie,
                 double freq = 1.0;  // 默认频率（单字）
                 int word_char_len = next_pos - i;  // 词长（字符数）
                 
+                // ⭐ 修复：只有完全匹配时才使用词典频率
                 if (misaki_trie_match_longest(trie, text, byte_start, &match)) {
-                    freq = match.frequency > 0 ? match.frequency : 1.0;
+                    // 检查匹配长度是否等于当前词长
+                    if (match.length == word_byte_len) {
+                        freq = match.frequency > 0 ? match.frequency : 1.0;
+                    }
+                    // 否则使用默认频率 1.0（未登录词/部分匹配）
                 }
                 
                 // ⭐ 优化：计算分数 = log(freq) + 词长奖励 + dp[next_pos]
@@ -280,7 +285,41 @@ MisakiTokenList* misaki_zh_tokenize(void *tokenizer, const char *text) {
                 }
                 
                 // 如果有 2 个以上连续单字，用 HMM 重新切分
-                if (single_char_count >= 2) {
+                // ⭐ 但是：如果下一个 token 是多字词且以当前单字组合开头，不合并
+                bool should_use_hmm = (single_char_count >= 2);
+                
+                if (should_use_hmm && (start + single_char_count) < result->count) {
+                    // 检查下一个 token
+                    const char *next_token = result->tokens[start + single_char_count].text;
+                    
+                    // 如果下一个 token 不是单字，且以最后一个单字开头
+                    int next_char_len = 0;
+                    const char *p_next = next_token;
+                    while (*p_next) {
+                        uint32_t codepoint;
+                        int bytes = misaki_utf8_decode(p_next, &codepoint);
+                        if (bytes == 0) break;
+                        next_char_len++;
+                        p_next += bytes;
+                    }
+                    
+                    if (next_char_len > 1) {
+                        // 检查是否有组合词（最后一个单字 + 下一个 token 的前缀）
+                        char combined[256] = {0};
+                        strcat(combined, result->tokens[start + single_char_count - 1].text);
+                        strcat(combined, next_token);
+                        
+                        // 查询组合词是否在词典中
+                        TrieMatch match_combined;
+                        ZhTokenizer *zh = (ZhTokenizer *)tokenizer;
+                        if (zh->dict_trie && misaki_trie_lookup(zh->dict_trie, combined, NULL, NULL)) {
+                            // 组合词存在，不用 HMM 合并
+                            should_use_hmm = false;
+                        }
+                    }
+                }
+                
+                if (should_use_hmm) {
                     // 合并连续单字
                     char oov_text[256] = {0};
                     for (int j = start; j < start + single_char_count; j++) {

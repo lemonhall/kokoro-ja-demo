@@ -72,10 +72,11 @@ void misaki_zh_tokenizer_free(void *tokenizer) {
  * @param trie 词典 Trie 树（用于查询词频）
  * @param text 文本
  * @param route 输出：路径数组
+ * @param scores 输出：每个词的分数数组（可选）
  * @return 成功返回 true
  */
 static bool calculate_route(const DAG *dag, const Trie *trie, 
-                           const char *text, int *route) {
+                           const char *text, int *route, double *scores) {
     if (!dag || !trie || !text || !route) {
         return false;
     }
@@ -201,7 +202,7 @@ MisakiTokenList* misaki_zh_tokenize(void *tokenizer, const char *text) {
         return NULL;
     }
     
-    if (!calculate_route(dag, zh->dict_trie, text, route)) {
+    if (!calculate_route(dag, zh->dict_trie, text, route, NULL)) {
         free(route);
         misaki_dag_free(dag);
         return NULL;
@@ -241,6 +242,18 @@ MisakiTokenList* misaki_zh_tokenize(void *tokenizer, const char *text) {
             
             MisakiToken *token = misaki_token_create(word, NULL, byte_pos, word_byte_len);
             if (token) {
+                // ⭐ 计算并设置 score（基于词频）
+                TrieMatch match;
+                double freq = 1.0;
+                if (misaki_trie_match_longest(zh->dict_trie, text, byte_pos, &match)) {
+                    if (match.length == word_byte_len) {
+                        freq = match.frequency > 0 ? match.frequency : 1.0;
+                    }
+                }
+                // score = log(freq) + 词长奖励
+                double score = log(freq) + (word_char_len - 1) * 15.0;
+                token->score = score;
+                
                 misaki_token_list_add(result, token);
                 misaki_token_free(token);
             }

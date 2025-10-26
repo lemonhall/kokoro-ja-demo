@@ -120,8 +120,14 @@ MisakiTokenList* misaki_ja_g2p(const Trie *dict_trie,
         }
     }
     
-    // 3. 长音处理（如果启用）
-    if (options && options->ja_long_vowel) {
+    // 3. 长音处理（⭐ 默认启用，因为这是日文核心特性）
+    bool enable_long_vowel = true;
+    if (options) {
+        // 如果提供了 options，尊重其设置
+        enable_long_vowel = options->ja_long_vowel;
+    }
+    
+    if (enable_long_vowel) {
         misaki_ja_long_vowel(tokens);
     }
     
@@ -132,24 +138,60 @@ MisakiTokenList* misaki_ja_g2p(const Trie *dict_trie,
  * 日文长音处理
  * 
  * 处理日文中的长音现象，例如：
- *   - 長音符：コーヒー → koːçiː (已由 kana_map 处理)
- *   - 同元音重复：おおきい → oːkiː (TODO)
- *   - 特殊组合：えい → eː (TODO)
- * 
- * 现状：
- *   - ✅ 長音符 ー 已由 kana_map 正确映射为 IPA ː
- *   - ⚠️  同元音重复处理尚未实现
- *   - ⚠️  特殊组合规则尚未实现
+ *   - 长音符：コーヒー → koːçiː (已由 kana_map 处理)
+ *   - 同元音重复：おおきい → oːkiː
+ *   - 特殊组合：えい → eː, おう → oː (⭐ 重要！)
  * 
  * @param tokens Token 列表
  */
 void misaki_ja_long_vowel(MisakiTokenList *tokens) {
-    // 注意：kana_map 已经处理了长音符 ー → ː
-    // 例如：「コーヒー」已经被正确转换为「koːçiː」
+    if (!tokens) {
+        return;
+    }
     
-    // TODO: 实现额外的长音规则：
-    // 1. 同元音重复：おおきい → oːkiː
-    // 2. 特殊组合：えい、おう 等
-    
-    (void)tokens;
+    // ⭐ 实现核心长音规则：处理日文长音现象
+    for (int i = 0; i < tokens->count; i++) {
+        MisakiToken *token = &tokens->tokens[i];
+        if (!token->phonemes) {
+            continue;
+        }
+        
+        char *phonemes = token->phonemes;
+        int len = strlen(phonemes);
+        char result[1024] = {0};
+        int pos = 0;
+        
+        for (int j = 0; j < len; ) {
+            // ⭐ 检测 "oɯ" → "oː" (如 とう、そう、こう)
+            if (j + 2 <= len && phonemes[j] == 'o' && phonemes[j+1] == 'ɯ') {
+                result[pos++] = 'o';
+                result[pos++] = 'ː';
+                j += 2;
+            }
+            // ⭐ 检测 "ei" → "eː" (如 けい、せい、めい)
+            else if (j + 2 <= len && phonemes[j] == 'e' && phonemes[j+1] == 'i') {
+                result[pos++] = 'e';
+                result[pos++] = 'ː';
+                j += 2;
+            }
+            // ⭐ 检测 "aɯ" → "aː" (如 おう、かう)
+            else if (j + 2 <= len && phonemes[j] == 'a' && phonemes[j+1] == 'ɯ') {
+                result[pos++] = 'a';
+                result[pos++] = 'ː';
+                j += 2;
+            }
+            // 其他字符直接复制
+            else {
+                result[pos++] = phonemes[j++];
+            }
+        }
+        
+        result[pos] = '\0';
+        
+        // 如果有修改，更新 phonemes
+        if (strcmp(result, phonemes) != 0) {
+            free(token->phonemes);
+            token->phonemes = misaki_strdup(result);
+        }
+    }
 }

@@ -1,7 +1,7 @@
 /**
  * misaki_kana_map.c
  * 
- * 假名→IPA 音素映射表（从 Python 的 HEPBURN 和 M2P 移植）
+ * 假名→IPA 音素映射表（从 Python の HEPBURN 和 M2P 移植）
  * 
  * License: MIT
  */
@@ -20,51 +20,55 @@ typedef struct {
     const char *ipa;        // IPA 音素
 } KanaMapping;
 
-// 单字符平假名映射（84个基础字符）
+// 単字符平假名映射（84个基础字符）
 static const KanaMapping HEPBURN_SINGLE[] = {
     // あ行
     {"ぁ", "a"}, {"あ", "a"}, {"ぃ", "i"}, {"い", "i"},
     {"ぅ", "ɯ"}, {"う", "ɯ"}, {"ぇ", "e"}, {"え", "e"},
     {"ぉ", "o"}, {"お", "o"},
-    
+
     // か行
-    {"か", "ka"}, {"が", "ɡa"}, {"き", "kʲi"}, {"ぎ", "ɡʲi"},
+    // ⭐ 修正：简化 IPA，移除不必要的腭音化标记
+    {"か", "ka"}, {"が", "ɡa"}, {"き", "ki"}, {"ぎ", "ɡi"},
     {"く", "kɯ"}, {"ぐ", "ɡɯ"}, {"け", "ke"}, {"げ", "ɡe"},
     {"こ", "ko"}, {"ご", "ɡo"},
-    
+
     // さ行
-    {"さ", "sa"}, {"ざ", "ʣa"}, {"し", "ɕi"}, {"じ", "ʥi"},
-    {"す", "sɨ"}, {"ず", "zɨ"}, {"せ", "se"}, {"ぜ", "ʣe"},
-    {"そ", "so"}, {"ぞ", "ʣo"},
-    
+    // ⭐ 修正：统一使用更标准的 IPA 符号
+    {"さ", "sa"}, {"ざ", "dza"}, {"し", "ɕi"}, {"じ", "dʑi"},
+    {"す", "sɨ"}, {"ず", "dzɨ"}, {"せ", "se"}, {"ぜ", "dze"},
+    {"そ", "so"}, {"ぞ", "dzo"},
+
     // た行
-    {"た", "ta"}, {"だ", "da"}, {"ち", "ʨi"}, {"ぢ", "ʥi"},
+    // ⭐ 修正：「ち」和「ぢ」使用标准 IPA tɕ 和 dʑ
+    {"た", "ta"}, {"だ", "da"}, {"ち", "tɕi"}, {"ぢ", "dʑi"},
     // っ 在特殊处理中
     {"つ", "ʦɨ"}, {"づ", "zɨ"}, {"て", "te"}, {"で", "de"},
     {"と", "to"}, {"ど", "do"},
     
     // な行
-    {"な", "na"}, {"に", "ɲi"}, {"ぬ", "nɯ"}, {"ね", "ne"},
+    // ⭐ 修正：简化 IPA，移除不必要的腭音化标记
+    {"な", "na"}, {"に", "ni"}, {"ぬ", "nɯ"}, {"ね", "ne"},
     {"の", "no"},
-    
+
     // は行
     {"は", "ha"}, {"ば", "ba"}, {"ぱ", "pa"}, {"ひ", "çi"},
-    {"び", "bʲi"}, {"ぴ", "pʲi"}, {"ふ", "ɸɯ"}, {"ぶ", "bɯ"},
+    {"び", "bi"}, {"ぴ", "pi"}, {"ふ", "ɸɯ"}, {"ぶ", "bɯ"},
     {"ぷ", "pɯ"}, {"へ", "he"}, {"べ", "be"}, {"ぺ", "pe"},
     {"ほ", "ho"}, {"ぼ", "bo"}, {"ぽ", "po"},
     
     // ま行
-    {"ま", "ma"}, {"み", "mʲi"}, {"む", "mɯ"}, {"め", "me"},
+    {"ま", "ma"}, {"み", "mi"}, {"む", "mɯ"}, {"め", "me"},
     {"も", "mo"},
-    
+
     // や行
     {"ゃ", "ja"}, {"や", "ja"}, {"ゅ", "jɯ"}, {"ゆ", "jɯ"},
     {"ょ", "jo"}, {"よ", "jo"},
     
     // ら行
-    {"ら", "ɾa"}, {"り", "ɾʲi"}, {"る", "ɾɯ"}, {"れ", "ɾe"},
+    {"ら", "ɾa"}, {"り", "ɾi"}, {"る", "ɾɯ"}, {"れ", "ɾe"},
     {"ろ", "ɾo"},
-    
+
     // わ行
     // ⭐ 修正：「wa」使用更标准的 IPA（而不是 βa）
     {"ゎ", "wa"}, {"わ", "wa"}, {"ゐ", "i"}, {"ゑ", "e"},
@@ -87,10 +91,10 @@ static const KanaMapping HEPBURN_DIGRAPH[] = {
     {"うぃ", "wi"}, {"うぇ", "we"}, {"うぉ", "wo"},
     
     // き系
-    {"きぇ", "kʲe"}, {"きゃ", "kʲa"}, {"きゅ", "kʲɨ"}, {"きょ", "kʲo"},
+    {"きぇ", "ke"}, {"きゃ", "ka"}, {"きゅ", "kɨ"}, {"きょ", "ko"},
     
     // ぎ系
-    {"ぎゃ", "ɡʲa"}, {"ぎゅ", "ɡʲɨ"}, {"ぎょ", "ɡʲo"},
+    {"ぎゃ", "ɡa"}, {"ぎゅ", "ɡɨ"}, {"ぎょ", "ɡo"},
     
     // く系
     {"くぁ", "kᵝa"}, {"くぃ", "kᵝi"}, {"くぇ", "kᵝe"}, {"くぉ", "kᵝo"},
@@ -105,14 +109,14 @@ static const KanaMapping HEPBURN_DIGRAPH[] = {
     {"じぇ", "ʥe"}, {"じゃ", "ʥa"}, {"じゅ", "ʥɨ"}, {"じょ", "ʥo"},
     
     // ち系
-    {"ちぇ", "ʨe"}, {"ちゃ", "ʨa"}, {"ちゅ", "ʨɨ"}, {"ちょ", "ʨo"},
+    {"ちぇ", "tɕe"}, {"ちゃ", "tɕa"}, {"ちゅ", "tɕɨ"}, {"ちょ", "tɕo"},
     
     // ぢ系
     {"ぢゃ", "ʥa"}, {"ぢゅ", "ʥɨ"}, {"ぢょ", "ʥo"},
     
     // つ系
-    {"つぁ", "ʦa"}, {"つぃ", "ʦʲi"}, {"つぇ", "ʦe"}, {"つぉ", "ʦo"},
-    
+    {"つぁ", "tsa"}, {"つぃ", "tsi"}, {"つぇ", "tse"}, {"つぉ", "tso"},
+
     // て系
     {"てぃ", "tʲi"}, {"てゅ", "tʲɨ"},
     
@@ -126,30 +130,30 @@ static const KanaMapping HEPBURN_DIGRAPH[] = {
     {"どぅ", "dɯ"},
     
     // に系
-    {"にぇ", "ɲe"}, {"にゃ", "ɲa"}, {"にゅ", "ɲɨ"}, {"にょ", "ɲo"},
+    {"にぇ", "ne"}, {"にゃ", "na"}, {"にゅ", "nɨ"}, {"にょ", "no"},
     
     // ひ系
     {"ひぇ", "çe"}, {"ひゃ", "ça"}, {"ひゅ", "çɨ"}, {"ひょ", "ço"},
     
     // び系
-    {"びゃ", "bʲa"}, {"びゅ", "bʲɨ"}, {"びょ", "bʲo"},
+    {"びゃ", "ba"}, {"びゅ", "bɨ"}, {"びょ", "bo"},
     
     // ぴ系
-    {"ぴゃ", "pʲa"}, {"ぴゅ", "pʲɨ"}, {"ぴょ", "pʲo"},
+    {"ぴゃ", "pa"}, {"ぴゅ", "pɨ"}, {"ぴょ", "po"},
     
     // ふ系
-    {"ふぁ", "ɸa"}, {"ふぃ", "ɸʲi"}, {"ふぇ", "ɸe"}, {"ふぉ", "ɸo"},
-    {"ふゅ", "ɸʲɨ"}, {"ふょ", "ɸʲo"},
+    {"ふぁ", "ɸa"}, {"ふぃ", "ɸi"}, {"ふぇ", "ɸe"}, {"ふぉ", "ɸo"},
+    {"ふゅ", "ɸɨ"}, {"ふょ", "ɸo"},
     
     // み系
-    {"みゃ", "mʲa"}, {"みゅ", "mʲɨ"}, {"みょ", "mʲo"},
+    {"みゃ", "ma"}, {"みゅ", "mɨ"}, {"みょ", "mo"},
     
     // り系
-    {"りゃ", "ɾʲa"}, {"りゅ", "ɾʲɨ"}, {"りょ", "ɾʲo"},
+    {"りゃ", "ɾa"}, {"りゅ", "ɾɨ"}, {"りょ", "ɾo"},
     
     // ゔ系
-    {"ゔぁ", "va"}, {"ゔぃ", "vʲi"}, {"ゔぇ", "ve"}, {"ゔぉ", "vo"},
-    {"ゔゅ", "bʲɨ"}, {"ゔょ", "bʲo"},
+    {"ゔぁ", "va"}, {"ゔぃ", "vi"}, {"ゔぇ", "ve"}, {"ゔぉ", "vo"},
+    {"ゔゅ", "bɨ"}, {"ゔょ", "bo"},
 };
 
 // 标点符号映射
@@ -177,7 +181,7 @@ static const char* kata_to_hira(const char *kata) {
     
     // 片假名范围：0x30A1-0x30FF
     // 平假名范围：0x3041-0x309F
-    // 差值：0x60
+    // 差値：0x60
     if (codepoint >= 0x30A1 && codepoint <= 0x30F6) {
         uint32_t hira_codepoint = codepoint - 0x60;
         misaki_utf8_encode(hira_codepoint, result);
@@ -192,41 +196,41 @@ static const char* kata_to_hira(const char *kata) {
  * ========================================================================== */
 
 /**
- * 查找假名的 IPA 映射
+ * 查找假名の IPA 映射
  * 
  * @param kana 假名字符串（UTF-8，支持平假名和片假名）
  * @param out_ipa 输出：IPA 音素（如果找到）
- * @return 匹配的字节数，0表示未找到
+ * @return 匹配の字节数，0表示未找到
  */
 int misaki_kana_to_ipa(const char *kana, const char **out_ipa) {
     if (!kana || !out_ipa) {
         return 0;
     }
     
-    // 尝试片假名→平假名转换
+    // 尝試片假名→平假名変換
     const char *hira = kata_to_hira(kana);
     const char *search_kana = hira ? hira : kana;
     
-    // 1. 尝试双字符匹配
+    // 1. 尝試双字符マッチ
     for (size_t i = 0; i < HEPBURN_DIGRAPH_COUNT; i++) {
         size_t len = strlen(HEPBURN_DIGRAPH[i].kana);
         if (strncmp(search_kana, HEPBURN_DIGRAPH[i].kana, len) == 0) {
             *out_ipa = HEPBURN_DIGRAPH[i].ipa;
-            // 返回原始 kana 的字节数（单字符 = 3字节）
-            return hira ? 3 : (int)len;  // 修复：返回单个字符的字节数
+            // 返却元の kana の字节数（単字符 = 3字節）
+            return hira ? 3 : (int)len;  // 修正：単個文字の字节数を返却
         }
     }
     
-    // 2. 尝试单字符匹配
+    // 2. 尝試単字符マッチ
     for (size_t i = 0; i < HEPBURN_SINGLE_COUNT; i++) {
         size_t len = strlen(HEPBURN_SINGLE[i].kana);
         if (strncmp(search_kana, HEPBURN_SINGLE[i].kana, len) == 0) {
             *out_ipa = HEPBURN_SINGLE[i].ipa;
-            return hira ? 3 : (int)len;  // 修复：返回单个字符的字节数
+            return hira ? 3 : (int)len;  // 修正：単個文字の字节数を返却
         }
     }
     
-    // 3. 尝试标点符号匹配
+    // 3. 尝試標点符号マッチ
     for (size_t i = 0; i < PUNCT_COUNT; i++) {
         size_t len = strlen(PUNCT_MAPPING[i].kana);
         if (strncmp(kana, PUNCT_MAPPING[i].kana, len) == 0) {
@@ -239,12 +243,12 @@ int misaki_kana_to_ipa(const char *kana, const char **out_ipa) {
 }
 
 /**
- * 处理特殊假名字符
+ * 特殊假名文字の処理
  * 
- * @param kana 当前假名
- * @param next_kana 下一个假名（可为 NULL）
- * @param out_ipa 输出：IPA 音素
- * @return 匹配的字节数
+ * @param kana 現在の假名
+ * @param next_kana 次の假名（可为 NULL）
+ * @param out_ipa 出力：IPA 音素
+ * @return 匹配の字节数
  */
 int misaki_kana_special(const char *kana, const char *next_kana, const char **out_ipa) {
     // 促音 ッ/っ → ʔ
@@ -253,10 +257,10 @@ int misaki_kana_special(const char *kana, const char *next_kana, const char **ou
         return (int)strlen(kana);
     }
     
-    // 拨音 ン/ん → 根据后续字符决定
+    // 拨音 ン/ん → 次の音の先頭文字によって決定
     if (strcmp(kana, "ん") == 0 || strcmp(kana, "ン") == 0) {
         if (next_kana) {
-            // 简化处理：根据下一个音的首字母
+            // 簡易処理：次の音の先頭文字
             const char *next_ipa = NULL;
             misaki_kana_to_ipa(next_kana, &next_ipa);
             
@@ -271,10 +275,10 @@ int misaki_kana_special(const char *kana, const char *next_kana, const char **ou
                     *out_ipa = "ŋ";
                     return (int)strlen(kana);
                 }
-                // ɲ before ɲ,ʨ,ʥ
-                else if ((unsigned char)next_ipa[0] > 0x7F) { // 多字节 UTF-8
-                    if (strncmp(next_ipa, "ʨ", 3) == 0 || strncmp(next_ipa, "ʥ", 3) == 0 ||
-                        strncmp(next_ipa, "ɲ", 3) == 0) {
+                // ɲ before ɲ,tɕ,dʑ,ɕ (修正：更新为新的 IPA 符号)
+                else if ((unsigned char)next_ipa[0] > 0x7F) { // 多文字 UTF-8
+                    if (strncmp(next_ipa, "tɕ", 4) == 0 || strncmp(next_ipa, "dʑ", 4) == 0 ||
+                        strncmp(next_ipa, "ɲ", 3) == 0 || strncmp(next_ipa, "ɕ", 3) == 0) {
                         *out_ipa = "ɲ";
                         return (int)strlen(kana);
                     }
@@ -287,12 +291,12 @@ int misaki_kana_special(const char *kana, const char *next_kana, const char **ou
                 }
             }
         }
-        // 默认：ɴ
+        // デフォルト：ɴ
         *out_ipa = "ɴ";
         return (int)strlen(kana);
     }
     
-    // 长音符 ー → ː
+    // 長音符 ー → ː
     if (strcmp(kana, "ー") == 0) {
         *out_ipa = "ː";
         return (int)strlen(kana);
@@ -302,12 +306,12 @@ int misaki_kana_special(const char *kana, const char *next_kana, const char **ou
 }
 
 /**
- * 将整个假名字符串转换为 IPA
+ * 偽名文字列を IPA に変換
  * 
- * @param kana_str 假名字符串（UTF-8）
- * @param out_buffer 输出缓冲区
- * @param buffer_size 缓冲区大小
- * @return IPA 音素长度，-1表示错误
+ * @param kana_str 偽名文字列（UTF-8）
+ * @param out_buffer 出力バッファ
+ * @param buffer_size バッファサイズ
+ * @return IPA 音素長さ，-1表示エラー
  */
 int misaki_kana_string_to_ipa(const char *kana_str, char *out_buffer, int buffer_size) {
     if (!kana_str || !out_buffer || buffer_size <= 0) {
@@ -316,9 +320,10 @@ int misaki_kana_string_to_ipa(const char *kana_str, char *out_buffer, int buffer
     
     int pos = 0;
     const char *p = kana_str;
+    char prev_vowel = '\0';  // ⭐ 记录前一个元音，用于长音检测
     
     while (*p && pos < buffer_size - 1) {
-        // 获取下一个字符位置
+        // 次の文字位置を取得
         const char *next_p = p;
         uint32_t codepoint;
         int bytes = misaki_utf8_decode(p, &codepoint);
@@ -329,7 +334,7 @@ int misaki_kana_string_to_ipa(const char *kana_str, char *out_buffer, int buffer
         const char *ipa = NULL;
         int matched = 0;
         
-        // 1. 尝试特殊字符处理
+        // 1. 特殊文字の処理を試みる
         char current_char[16] = {0};
         strncpy(current_char, p, bytes);
         
@@ -343,22 +348,58 @@ int misaki_kana_string_to_ipa(const char *kana_str, char *out_buffer, int buffer
         
         matched = misaki_kana_special(current_char, *next_char ? next_char : NULL, &ipa);
         
-        // 2. 如果不是特殊字符，使用普通映射
+        // 2. 特殊文字でない場合は通常のマッピングを使用
         if (matched == 0) {
             matched = misaki_kana_to_ipa(p, &ipa);
         }
         
-        // 3. 如果找到映射，复制到输出
+        // 3. ⭐ 长音检测：「う」在 o 段后面时转换为长音
         if (matched > 0 && ipa) {
-            int ipa_len = strlen(ipa);
-            if (pos + ipa_len < buffer_size) {
-                strcpy(out_buffer + pos, ipa);
-                pos += ipa_len;
+            // 检测是否是 "う" 或 "ウ"
+            if ((strcmp(current_char, "う") == 0 || strcmp(current_char, "ウ") == 0) && prev_vowel == 'o') {
+                // 不输出 "ɯ"，而是输出长音符 "ː"
+                if (pos + 3 < buffer_size) {  // ⭐ 修正：UTF-8 编码的 ː 需要 3 字节
+                    // 直接输出 UTF-8 编码的长音符
+                    out_buffer[pos++] = (char)0xCB;
+                    out_buffer[pos++] = (char)0x90;
+                }
+                p += matched;
+                // prev_vowel 保持为 'o'，因为长音后还是 o 段
             }
-            p += matched;
+            // 检测是否是 "い" 或 "イ" 在 e 段后面
+            else if ((strcmp(current_char, "い") == 0 || strcmp(current_char, "イ") == 0) && prev_vowel == 'e') {
+                // 不输出 "i"，而是输出长音符 "ː"
+                if (pos + 3 < buffer_size) {  // ⭐ 修正：UTF-8 编码
+                    out_buffer[pos++] = (char)0xCB;
+                    out_buffer[pos++] = (char)0x90;
+                }
+                p += matched;
+                // prev_vowel 保持为 'e'
+            }
+            else {
+                // 正常输出 IPA
+                int ipa_len = strlen(ipa);
+                if (pos + ipa_len < buffer_size) {
+                    strcpy(out_buffer + pos, ipa);
+                    pos += ipa_len;
+                    
+                    // ⭐ 更新 prev_vowel：提取最后一个字符作为元音
+                    if (ipa_len > 0) {
+                        char last_char = ipa[ipa_len - 1];
+                        if (last_char == 'a' || last_char == 'e' || last_char == 'i' || 
+                            last_char == 'o' || last_char == 'ɨ') {
+                            prev_vowel = last_char;
+                        } else {
+                            prev_vowel = '\0';  // 不是元音结尾
+                        }
+                    }
+                }
+                p += matched;
+            }
         } else {
-            // 未找到映射，跳过这个字符
+            // マッピングが見つからなかった場合はこの文字をスキップ
             p += bytes;
+            prev_vowel = '\0';
         }
     }
     

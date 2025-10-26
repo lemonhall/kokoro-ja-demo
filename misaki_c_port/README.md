@@ -15,11 +15,71 @@
 
 ### 编译
 
+#### Linux / WSL2 编译
+
 ```bash
 cd misaki_c_port
 mkdir -p build && cd build
 cmake ..
 make
+```
+
+#### Windows 跨平台编译 (DLL/静态库)
+
+**⚠️ 重要提示**：如果要在 Windows 下的 Python 中使用（如 Kokoro TTS 集成），需要编译为 Windows 兼容的库。
+
+**方案1：使用 MinGW-w64 交叉编译（推荐）**
+
+```bash
+# 在 WSL2 中安装 MinGW-w64
+sudo apt-get install mingw-w64
+
+# 交叉编译为 Windows DLL
+cd misaki_c_port
+mkdir -p build_win && cd build_win
+
+cmake .. \
+  -DCMAKE_SYSTEM_NAME=Windows \
+  -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+  -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+  -DBUILD_SHARED_LIBS=ON
+
+make
+
+# 输出: libmisaki.dll + misaki.exe (Windows可执行)
+```
+
+**方案2：使用 MSVC 在 Windows 下直接编译**
+
+```powershell
+# 在 Windows PowerShell 中
+cd misaki_c_port
+mkdir build_msvc
+cd build_msvc
+
+cmake .. -G "Visual Studio 17 2022" -A x64
+cmake --build . --config Release
+
+# 输出: Release/misaki.dll + Release/misaki.exe
+```
+
+**方案3：使用 Python ctypes 包装（快速测试）**
+
+```python
+# 创建 Python 绑定（无需重新编译）
+import ctypes
+import os
+
+# 加载 DLL
+libmisaki = ctypes.CDLL('./libmisaki.dll')  # Windows
+# libmisaki = ctypes.CDLL('./libmisaki.so')  # Linux/WSL
+
+# 调用 C 函数
+libmisaki.misaki_g2p.argtypes = [ctypes.c_char_p]
+libmisaki.misaki_g2p.restype = ctypes.c_char_p
+
+result = libmisaki.misaki_g2p(b"Hello")
+print(result.decode('utf-8'))
 ```
 
 ### 使用
@@ -150,18 +210,20 @@ int main() {
 ## 🎯 下一步计划
 
 ### 高优先级
-1. **拼音 → IPA 完整映射**（中文）
-2. **假名 → IPA 完整映射**（日文）
-3. **多音字上下文选择**（中文）
+1. **🔧 Windows 跨平台支持**：编译为 DLL 以便 Python/Kokoro TTS 在 Windows 下调用
+2. **拼音 → IPA 完整映射**（中文）
+3. **假名 → IPA 完整映射**（日文）
+4. **多音字上下文选择**（中文）
 
 ### 中优先级
-4. 声调变化规则（三声变调、一不变调）
-5. 儿化音处理
-6. 英文 OOV 音素预测
+5. 声调变化规则（三声变调、一不变调）
+6. 儿化音处理
+7. 英文 OOV 音素预测
+8. **Python ctypes 绑定**：提供简洁的 Python API
 
 ### 低优先级
-7. 文本规范化（全角转半角、繁简转换）
-8. 韩文/越南文支持
+9. 文本规范化（全角转半角、繁简转换）
+10. 韩文/越南文支持
 
 ## 📚 参考资源
 
@@ -170,6 +232,29 @@ int main() {
   - 中文分词：[jieba](https://github.com/fxsjy/jieba)
   - 日文音素：[OpenJTalk](https://github.com/r9y9/open_jtalk)
   - 英文词典：[CMUdict](http://www.speech.cs.cmu.edu/cgi-bin/cmudict)
+- **跨平台编译**：
+  - [CMake 跨平台编译指南](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html)
+  - [MinGW-w64 工具链](https://www.mingw-w64.org/)
+
+## ⚠️ 已知问题
+
+### Windows 集成问题
+
+**问题**：当前 C 模块在 WSL2 中编译为 `.so` 共享库，无法直接在 Windows 下的 Python 中调用（如 Kokoro TTS）。
+
+**影响**：
+- ❌ Windows 下的 `kokoro` 包无法使用 C 版本 G2P
+- ❌ 需要在 WSL2 中运行所有测试脚本
+- ❌ Android 项目中的 JNI 绑定需要额外处理
+
+**解决方案**：
+1. **短期**：使用 MinGW-w64 交叉编译为 `.dll`
+2. **中期**：提供 Python ctypes/cffi 绑定
+3. **长期**：创建 Python Extension（`.pyd`），直接集成到 `misaki` 包中
+
+**相关文件**：
+- 跨平台编译脚本：`scripts/build_windows.sh` (待创建)
+- Python 绑定：`python/misaki_binding.py` (待创建)
 
 ## 📝 许可证
 

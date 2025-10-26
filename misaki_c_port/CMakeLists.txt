@@ -18,6 +18,9 @@ else()
     add_compile_options(-Wall -Wextra -g)
 endif()
 
+# 支持构建共享库（Windows DLL）
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
 # 目录
 set(MISAKI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(MISAKI_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -45,14 +48,35 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 
-# 静态库
+# 静态库（默认）
 add_library(misaki_static STATIC ${MISAKI_SOURCES})
 target_include_directories(misaki_static PUBLIC ${MISAKI_INCLUDE_DIR})
 set_target_properties(misaki_static PROPERTIES OUTPUT_NAME misaki)
 
+# 共享库（Windows DLL / Linux .so）
+if(BUILD_SHARED_LIBS)
+    add_library(misaki_shared SHARED ${MISAKI_SOURCES})
+    target_include_directories(misaki_shared PUBLIC ${MISAKI_INCLUDE_DIR})
+    set_target_properties(misaki_shared PROPERTIES OUTPUT_NAME misaki)
+    
+    # Windows DLL 导出符号
+    if(WIN32)
+        target_compile_definitions(misaki_shared PRIVATE MISAKI_BUILD_DLL)
+        target_compile_definitions(misaki_shared PUBLIC MISAKI_DLL)
+    endif()
+    
+    # 设置库的别名
+    set(MISAKI_LIB misaki_shared)
+else()
+    set(MISAKI_LIB misaki_static)
+endif()
+
 # 命令行工具（主程序）
 add_executable(misaki src/main.c)
-target_link_libraries(misaki misaki_static m)
+target_link_libraries(misaki ${MISAKI_LIB})
+if(NOT WIN32)
+    target_link_libraries(misaki m)
+endif()
 
 # 测试程序
 add_executable(test_string tests/test_string.c)

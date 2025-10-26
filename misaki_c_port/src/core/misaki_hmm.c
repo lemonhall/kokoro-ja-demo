@@ -225,6 +225,18 @@ int misaki_hmm_viterbi(const HmmModel *model,
         return 0;
     }
     
+    // ⭐ 添加：定义 PrevStatus 约束（与 jieba 一致）
+    // B 只能从 E 或 S 转移而来
+    // M 只能从 M 或 B 转移而来
+    // E 只能从 B 或 M 转移而来
+    // S 只能从 S 或 E 转移而来
+    static const HmmState prev_status[HMM_STATE_COUNT][2] = {
+        {HMM_STATE_E, HMM_STATE_S},  // B 的前驱: E, S
+        {HMM_STATE_M, HMM_STATE_B},  // M 的前驱: M, B
+        {HMM_STATE_B, HMM_STATE_M},  // E 的前驱: B, M
+        {HMM_STATE_S, HMM_STATE_E}   // S 的前驱: S, E
+    };
+    
     // 1. 统计字符数量
     int char_count = 0;
     uint32_t chars[256];  // 假设最多 256 个字符
@@ -260,8 +272,9 @@ int misaki_hmm_viterbi(const HmmModel *model,
             double max_prob = MIN_PROB;
             int best_prev = 0;
             
-            // 找到最佳前驱状态
-            for (int prev_s = 0; prev_s < HMM_STATE_COUNT; prev_s++) {
+            // ⭐ 修复：只遍历合法的前驱状态（使用 PrevStatus 约束）
+            for (int i = 0; i < 2; i++) {
+                int prev_s = prev_status[s][i];
                 double prob = V[t-1][prev_s] + model->prob_trans[prev_s][s];
                 if (prob > max_prob) {
                     max_prob = prob;
@@ -276,13 +289,15 @@ int misaki_hmm_viterbi(const HmmModel *model,
     }
     
     // 4. 回溯：找到最优路径
-    // 找到最后一个字符的最佳状态
+    // ⭐ 修复：最后一个状态只能是 E 或 S（与 jieba 一致）
     double max_prob = MIN_PROB;
     int best_state = 0;
     for (int s = 0; s < HMM_STATE_COUNT; s++) {
-        if (V[char_count-1][s] > max_prob) {
-            max_prob = V[char_count-1][s];
-            best_state = s;
+        if (s == HMM_STATE_E || s == HMM_STATE_S) {  // 只考虑 E 和 S
+            if (V[char_count-1][s] > max_prob) {
+                max_prob = V[char_count-1][s];
+                best_state = s;
+            }
         }
     }
     
@@ -311,37 +326,36 @@ MisakiTokenList* misaki_hmm_states_to_tokens(const char *text,
         return NULL;
     }
     
-    // 根据状态序列切分
+    // 根据状态序列切分（与 jieba 的 __cut 函数逻辑一致）
     // B-M-E 表示一个词，S 表示单字词
     
-    int word_start = 0;
-    const char *p = text;
-    int char_idx = 0;
+    int word_start_idx = 0;  // 词的起始字符索引
+    int word_start_byte = 0;  // 词的起始字节位置
     
-    while (*p && char_idx < state_count) {
+    const char *p = text;
+    int byte_pos = 0;
+    
+    for (int char_idx = 0; char_idx < state_count; char_idx++) {
+        // 获取当前字符的字节数
+        uint32_t cp;
+        int bytes = misaki_utf8_decode(p, &cp);
+        if (bytes == 0) break;
+        
+        // 如果是 B，记录词的开始位置
+        if (states[char_idx] == HMM_STATE_B) {
+            word_start_idx = char_idx;
+            word_start_byte = byte_pos;
+        }
         // 如果是 E 或 S，表示词结束
-        if (states[char_idx] == HMM_STATE_E || states[char_idx] == HMM_STATE_S) {
+        else if (states[char_idx] == HMM_STATE_E || states[char_idx] == HMM_STATE_S) {
+            // 计算词的字节长度
+            int word_byte_len = byte_pos + bytes - word_start_byte;
+            
             // 提取词
-            const char *word_start_ptr = text;
-            for (int i = 0; i < word_start && *word_start_ptr; i++) {
-                uint32_t cp;
-                int bytes = misaki_utf8_decode(word_start_ptr, &cp);
-                word_start_ptr += bytes;
-            }
-            
-            const char *word_end_ptr = word_start_ptr;
-            for (int i = word_start; i <= char_idx && *word_end_ptr; i++) {
-                uint32_t cp;
-                int bytes = misaki_utf8_decode(word_end_ptr, &cp);
-                word_end_ptr += bytes;
-            }
-            
-            // 创建 token
-            size_t word_len = word_end_ptr - word_start_ptr;
-            char *word = (char*)malloc(word_len + 1);
+            char *word = (char*)malloc(word_byte_len + 1);
             if (word) {
-                memcpy(word, word_start_ptr, word_len);
-                word[word_len] = '\0';
+                memcpy(word, text + word_start_byte, word_byte_len);
+                word[word_byte_len] = '\0';
                 
                 // 创建 MisakiToken
                 MisakiToken token = {
@@ -349,8 +363,8 @@ MisakiTokenList* misaki_hmm_states_to_tokens(const char *text,
                     .tag = NULL,
                     .phonemes = NULL,
                     .whitespace = NULL,
-                    .start = 0,
-                    .length = word_len,
+                    .start = word_start_byte,
+                    .length = word_byte_len,
                     .score = 0.0
                 };
                 
@@ -358,14 +372,39 @@ MisakiTokenList* misaki_hmm_states_to_tokens(const char *text,
                 free(word);  // 再 free
             }
             
-            word_start = char_idx + 1;
+            // 下一个词的起始位置
+            word_start_idx = char_idx + 1;
+            word_start_byte = byte_pos + bytes;
         }
         
         // 移动到下一个字符
-        uint32_t cp;
-        int bytes = misaki_utf8_decode(p, &cp);
         p += bytes;
-        char_idx++;
+        byte_pos += bytes;
+    }
+    
+    // 如果最后一个状态是 B 或 M，说明有未完成的词，强制输出
+    if (word_start_idx < state_count) {
+        int word_byte_len = byte_pos - word_start_byte;
+        if (word_byte_len > 0) {
+            char *word = (char*)malloc(word_byte_len + 1);
+            if (word) {
+                memcpy(word, text + word_start_byte, word_byte_len);
+                word[word_byte_len] = '\0';
+                
+                MisakiToken token = {
+                    .text = word,
+                    .tag = NULL,
+                    .phonemes = NULL,
+                    .whitespace = NULL,
+                    .start = word_start_byte,
+                    .length = word_byte_len,
+                    .score = 0.0
+                };
+                
+                misaki_token_list_add(tokens, &token);
+                free(word);
+            }
+        }
     }
     
     return tokens;

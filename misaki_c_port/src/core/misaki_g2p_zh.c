@@ -50,6 +50,8 @@ static const PinyinIPAMap initials_map[] = {
     {"z", "ts"},
     {"c", "tsʰ"},
     {"s", "s"},
+    {"y", "j"},  // ⭐ 添加：介音 y -> j
+    {"w", "w"},  // ⭐ 添加：介音 w -> w
     {NULL, NULL}
 };
 
@@ -251,7 +253,7 @@ static void split_initial_final(const char *pinyin, char *initial, char *final) 
         }
     }
     
-    // 尝试匹配单字母声母
+    // 尝试匹配单字母声母（包括 y, w）
     char one_char[2] = {pinyin[0], '\0'};
     if (find_initial_ipa(one_char)) {
         strcpy(initial, one_char);

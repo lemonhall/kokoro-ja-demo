@@ -248,7 +248,7 @@ MisakiTokenList* misaki_zh_tokenize(void *tokenizer, const char *text) {
     free(route);
     misaki_dag_free(dag);
     
-    // ⭐ 4. HMM 后处理：对连续的单字进行 HMM 重新切分
+    // 4. HMM 后处理：对连续的单字进行 HMM 重新切分
     if (zh->enable_hmm && zh->hmm_model && result->count > 0) {
         MisakiTokenList *hmm_result = misaki_token_list_create();
         if (hmm_result) {
@@ -301,17 +301,11 @@ MisakiTokenList* misaki_zh_tokenize(void *tokenizer, const char *text) {
                             misaki_token_list_add(hmm_result, &result->tokens[j]);
                         }
                     }
-                } else if (single_char_count > 0) {
-                    // 1 个单字，直接添加
-                    for (int j = start; j < start + single_char_count; j++) {
-                        misaki_token_list_add(hmm_result, &result->tokens[j]);
-                    }
+                } else if (single_char_count == 1) {
+                    misaki_token_list_add(hmm_result, &result->tokens[start]);
                 } else {
-                    // 0 个单字（多字词），添加当前 token 并前进
-                    if (i < result->count) {
-                        misaki_token_list_add(hmm_result, &result->tokens[i]);
-                        i++;
-                    }
+                    misaki_token_list_add(hmm_result, &result->tokens[i]);
+                    i++;
                 }
             }
             

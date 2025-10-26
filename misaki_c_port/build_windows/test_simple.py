@@ -23,13 +23,16 @@ def test_simple(text):
     if result == 0:
         phonemes = output_buffer.value.decode('utf-8')
         print(f"Text: {text}")
-        print(f"Phonemes: {phonemes}")
-        # 打印每个字符的十六进制
         print(f"Hex: {phonemes.encode('utf-8').hex()}")
+        # 解码hex显示
+        import binascii
+        phonemes_bytes = phonemes.encode('utf-8')
+        print(f"Phonemes ({len(phonemes)} chars, {len(phonemes_bytes)} bytes)")
     else:
         print(f"Failed for: {text}")
     
     lib.misaki_cleanup()
 
 if __name__ == "__main__":
-    test_simple("当人们说起人工智能时")
+    for word in ["心情", "新颖", "经营", "音乐"]:
+        test_simple(word)

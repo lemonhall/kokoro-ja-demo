@@ -156,5 +156,5 @@ def main(text):
 
 
 if __name__ == "__main__":
-    text = sys.argv[1] if len(sys.argv) > 1 else "知道吃饭的时候，市场上正在杀猪"
+    text = sys.argv[1] if len(sys.argv) > 1 else "心情新颖，经营音乐"
     main(text)

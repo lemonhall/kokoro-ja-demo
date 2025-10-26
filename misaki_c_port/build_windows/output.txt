@@ -1,0 +1,14 @@
+Text: 心情
+Traceback (most recent call last):
+  File "E:\development\kokoro-ja-demo\misaki_c_port\build_windows\test_simple.py", line 36, in <module>
+    test_simple(word)
+    ~~~~~~~~~~~^^^^^^
+  File "E:\development\kokoro-ja-demo\misaki_c_port\build_windows\test_simple.py", line 26, in test_simple
+    print(f"Phonemes: {phonemes}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'gbk' codec can't encode character '\u0255' in position 10: illegal multibyte sequence
+[DEBUG] 妫€娴嬭瑷€: 涓枃 (缃俊搴? 55.00%)
+鉁?HMM 妯″瀷鍔犺浇鎴愬姛
+   - 鍒濆姒傜巼: 鉁?
+   - 杞Щ姒傜巼: 鉁?
+   - 鍙戝皠姒傜巼: 鉁?(35224 涓瓧绗?

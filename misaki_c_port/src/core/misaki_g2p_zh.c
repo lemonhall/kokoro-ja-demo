@@ -100,25 +100,27 @@ static const PinyinIPAMap finals_map[] = {
     {"er", "ɚ"},      // 卷舌元音（特殊韵母）
     
     // ===== 前鼻韵母 (9个) =====
-    {"an", "an"},     // 开后鼻尾韵
-    {"en", "ən"},     // 半开央鼻尾韵
-    {"in", "in"},     // 闭前鼻尾韵
-    {"un", "uən"},    // uen 的简写（gun, kun, hun 等）
-    {"ün", "yn"},     // 闭前圆唇鼻尾韵
-    {"vn", "yn"},     // ün 的另一种写法
-    {"ian", "iɛn"},   // 前展鼻尾韵（注意：用 ɛ 而非 a）
-    {"uan", "uan"},   // 后圆鼻尾韵
-    {"üan", "yɛn"},   // 前圆鼻尾韵（与 ian 保持一致性）
+    // ⭐ 关键修复：将鼻音 n 分离出来，以便在词内连读时自然过渡
+    {"an", "a n"},     // 开后鼻尾韵 → 元音 + 鼻音
+    {"en", "ə n"},     // 半开央鼻尾韵 → 元音 + 鼻音
+    {"in", "i n"},     // 闭前鼻尾韵 → 元音 + 鼻音
+    {"un", "uə n"},    // uen 的简写（gun, kun, hun 等）
+    {"ün", "y n"},     // 闭前圆唇鼻尾韵 → 元音 + 鼻音
+    {"vn", "y n"},     // ün 的另一种写法
+    {"ian", "iɛ n"},   // 前展鼻尾韵（注意：用 ɛ 而非 a）
+    {"uan", "ua n"},   // 后圆鼻尾韵 → 元音 + 鼻音
+    {"üan", "yɛ n"},   // 前圆鼻尾韵（与 ian 保持一致性）
     
     // ===== 后鼻韵母 (9个) =====
-    {"ang", "ɑŋ"},    // 开后鼻尾韵
-    {"eng", "əŋ"},    // ⭐ 修复：半开央鼻尾韵（用 ə 而非 ɤ，避免"河南口音"）
-    {"ing", "iŋ"},    // 闭前鼻尾韵
-    {"ong", "ʊŋ"},    // 半闭后圆唇鼻尾韵
-    {"iang", "iɑŋ"},  // 前展后鼻韵
-    {"iong", "iʊŋ"},  // 前展后圆鼻韵
-    {"uang", "uɑŋ"},  // 后圆后鼻韵
-    {"ueng", "uəŋ"},  // ⭐ 修复：weng 的韵母形式（与 eng 一致使用 ə）
+    // ⭐ 关键修复：将鼻音 ŋ 分离出来，以便在词内连读时自然过渡
+    {"ang", "ɑ ŋ"},    // 开后鼻尾韵 → 元音 + 鼻音
+    {"eng", "ə ŋ"},    // 半开央鼻尾韵 → 元音 + 鼻音
+    {"ing", "i ŋ"},    // 闭前鼻尾韵 → 元音 + 鼻音
+    {"ong", "ʊ ŋ"},    // 半闭后圆唇鼻尾韵 → 元音 + 鼻音
+    {"iang", "iɑ ŋ"},  // 前展后鼻韵 → 元音 + 鼻音
+    {"iong", "iʊ ŋ"},  // 前展后圆鼻韵 → 元音 + 鼻音
+    {"uang", "uɑ ŋ"},  // 后圆后鼻韵 → 元音 + 鼻音
+    {"ueng", "uə ŋ"},  // weng 的韵母形式（与 eng 一致使用 ə）
     
     // ===== 其他复合韵母 (5个) =====
     {"ia", "iɑ"},     // 前展复合韵
@@ -470,26 +472,74 @@ char* misaki_zh_pinyin_to_ipa(const char *pinyin) {
         return misaki_strdup(pinyin);
     }
     
-    // ⭐ 内存安全：先计算需要的缓冲区大小
-    const char *tone_mark = (tone >= 0 && tone <= 5) ? tone_marks[tone] : "";
-    int needed = snprintf(NULL, 0, "%s%s%s",
-                         initial_ipa ? initial_ipa : "",
-                         final_ipa,
-                         tone_mark);
+    // ⭐ 关键修复：处理韵母中的空格（鼻音分离）
+    // 韵母格式："元音 鼻音" (如 "i n", "a ŋ")
+    // 目标输出："声母 + 元音 + 声调 + 鼻音" (如 "ɕi→n", "tɑ→ŋ")
     
-    // 分配足够的内存
-    char *result = (char*)malloc(needed + 1);
-    if (!result) {
+    char result[256] = {0};
+    int pos = 0;
+    
+    // 1. 添加声母
+    if (initial_ipa && initial_ipa[0] != '\0') {
+        int len = strlen(initial_ipa);
+        strcpy(result + pos, initial_ipa);
+        pos += len;
+    }
+    
+    // 2. 处理韵母：将声调插入到元音和鼻音之间
+    const char *tone_mark = (tone >= 0 && tone <= 5) ? tone_marks[tone] : "";
+    
+    // 检查韵母中是否有空格（鼻音分离）
+    const char *space_pos = strchr(final_ipa, ' ');
+    
+    if (space_pos != NULL) {
+        // 韵母被分离为 "元音 鼻音"
+        // 输出格式：元音 + 声调 + 鼻音
+        int vowel_len = space_pos - final_ipa;
+        
+        // 复制元音部分
+        strncpy(result + pos, final_ipa, vowel_len);
+        pos += vowel_len;
+        
+        // 添加声调
+        int tone_len = strlen(tone_mark);
+        strcpy(result + pos, tone_mark);
+        pos += tone_len;
+        
+        // 添加鼻音部分（跳过空格）
+        const char *nasal = space_pos + 1;
+        int nasal_len = strlen(nasal);
+        strcpy(result + pos, nasal);
+        pos += nasal_len;
+    } else {
+        // 韵母没有分离（无鼻音）
+        // 直接添加韵母 + 声调
+        int final_len = strlen(final_ipa);
+        strcpy(result + pos, final_ipa);
+        pos += final_len;
+        
+        int tone_len = strlen(tone_mark);
+        strcpy(result + pos, tone_mark);
+        pos += tone_len;
+    }
+    
+    result[pos] = '\0';
+    
+    // ⭐ 最终处理：移除所有空格（韵母中的空格只是用于标记鼻音位置）
+    char *final_result = (char*)malloc(pos + 1);
+    if (!final_result) {
         return NULL;
     }
     
-    // 组合：声母 + 韵母 + 声调
-    snprintf(result, needed + 1, "%s%s%s",
-             initial_ipa ? initial_ipa : "",
-             final_ipa,
-             tone_mark);
+    int final_pos = 0;
+    for (int i = 0; i < pos; i++) {
+        if (result[i] != ' ') {
+            final_result[final_pos++] = result[i];
+        }
+    }
+    final_result[final_pos] = '\0';
     
-    return result;
+    return final_result;
 }
 
 /* ============================================================================

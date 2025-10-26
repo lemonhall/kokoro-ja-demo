@@ -445,13 +445,154 @@ MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
  * 声调变化和儿化音
  * ========================================================================== */
 
+/**
+ * 从 IPA 音素中提取声调
+ * 
+ * @param ipa IPA 音素字符串
+ * @return 1-4 (四个声调), 0 (轻声或无声调)
+ */
+static int extract_tone_from_ipa(const char *ipa) {
+    if (!ipa) {
+        return 0;
+    }
+    
+    // IPA 声调标记：
+    // → = 一声（高平）
+    // ↗ = 二声（上升）
+    // ↓ = 三声（降升）
+    // ↘ = 四声（下降）
+    
+    if (strstr(ipa, "→")) return 1;
+    if (strstr(ipa, "↗")) return 2;
+    if (strstr(ipa, "↓")) return 3;
+    if (strstr(ipa, "↘")) return 4;
+    
+    return 0;  // 轻声
+}
+
+/**
+ * 修改 IPA 音素的声调
+ * 
+ * @param ipa 原 IPA 字符串
+ * @param new_tone 新声调 (1-4)
+ * @return 新的 IPA 字符串（需要 free）
+ */
+static char* change_ipa_tone(const char *ipa, int new_tone) {
+    if (!ipa || new_tone < 1 || new_tone > 4) {
+        return NULL;
+    }
+    
+    // 声调标记
+    const char *tone_marks[] = {"", "→", "↗", "↓", "↘"};
+    const char *old_marks[] = {"→", "↗", "↓", "↘"};
+    
+    // 复制原字符串
+    char result[256];
+    strncpy(result, ipa, sizeof(result) - 1);
+    result[sizeof(result) - 1] = '\0';
+    
+    // 移除所有旧声调标记
+    for (int i = 0; i < 4; i++) {
+        char *pos = strstr(result, old_marks[i]);
+        if (pos) {
+            // 移除该标记（UTF-8，3字节）
+            memmove(pos, pos + 3, strlen(pos + 3) + 1);
+            break;
+        }
+    }
+    
+    // 添加新声调标记（在字符串末尾）
+    strncat(result, tone_marks[new_tone], sizeof(result) - strlen(result) - 1);
+    
+    return misaki_strdup(result);
+}
+
 void misaki_zh_tone_sandhi(MisakiTokenList *tokens,
                            const G2POptions *options) {
-    // TODO: 实现声调变化规则
-    // - 三声变调：nǐ hǎo → ní hǎo
-    // - 一不变调：一个 → yí ge
-    (void)tokens;
-    (void)options;
+    if (!tokens || tokens->count == 0) {
+        return;
+    }
+    
+    // 遍历所有 token（除最后一个）
+    for (int i = 0; i < tokens->count - 1; i++) {
+        MisakiToken *current = &tokens->tokens[i];
+        MisakiToken *next = &tokens->tokens[i + 1];
+        
+        if (!current->text || !current->phonemes || !next->phonemes) {
+            continue;
+        }
+        
+        // 提取当前和下一个音节的声调
+        // 注：如果 phonemes 包含多个音节（用空格分隔），只处理最后一个
+        char *current_last = strrchr(current->phonemes, ' ');
+        char *next_first = strchr(next->phonemes, ' ');
+        
+        const char *current_ipa = current_last ? current_last + 1 : current->phonemes;
+        char next_ipa_buf[128];
+        if (next_first) {
+            size_t len = next_first - next->phonemes;
+            strncpy(next_ipa_buf, next->phonemes, len);
+            next_ipa_buf[len] = '\0';
+        } else {
+            strncpy(next_ipa_buf, next->phonemes, sizeof(next_ipa_buf) - 1);
+        }
+        const char *next_ipa = next_ipa_buf;
+        
+        int current_tone = extract_tone_from_ipa(current_ipa);
+        int next_tone = extract_tone_from_ipa(next_ipa);
+        
+        bool changed = false;
+        int new_tone = -1;
+        
+        // 规则1: 三声变调（三声 + 三声 → 二声 + 三声）
+        if (current_tone == 3 && next_tone == 3) {
+            new_tone = 2;
+            changed = true;
+        }
+        
+        // 规则2: "一"的变调
+        if (strcmp(current->text, "一") == 0) {
+            if (next_tone == 4 || next_tone == 0) {
+                new_tone = 2;  // 一 + 四声/轻声 → 二声
+                changed = true;
+            } else if (next_tone >= 1 && next_tone <= 3) {
+                new_tone = 4;  // 一 + 一二三声 → 四声
+                changed = true;
+            }
+        }
+        
+        // 规则3: "不"的变调
+        if (strcmp(current->text, "不") == 0 && next_tone == 4) {
+            new_tone = 2;  // 不 + 四声 → 二声
+            changed = true;
+        }
+        
+        // 应用变调
+        if (changed && new_tone > 0) {
+            // 如果 phonemes 只有一个音节，直接替换
+            if (!current_last) {
+                char *new_phonemes = change_ipa_tone(current->phonemes, new_tone);
+                if (new_phonemes) {
+                    free(current->phonemes);
+                    current->phonemes = new_phonemes;
+                }
+            } else {
+                // 多个音节，只替换最后一个
+                size_t prefix_len = current_last - current->phonemes + 1;
+                char *new_last = change_ipa_tone(current_ipa, new_tone);
+                if (new_last) {
+                    char new_phonemes[512];
+                    strncpy(new_phonemes, current->phonemes, prefix_len);
+                    new_phonemes[prefix_len] = '\0';
+                    strncat(new_phonemes, new_last, sizeof(new_phonemes) - prefix_len - 1);
+                    
+                    free(current->phonemes);
+                    current->phonemes = misaki_strdup(new_phonemes);
+                    free(new_last);
+                }
+            }
+        }
+    }
 }
 
 void misaki_zh_erhua(MisakiTokenList *tokens) {

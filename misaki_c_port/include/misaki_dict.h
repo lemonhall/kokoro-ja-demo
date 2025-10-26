@@ -138,6 +138,52 @@ void misaki_zh_dict_stats(const ZhDict *dict,
                           int *multi_pinyin_count);
 
 /* ============================================================================
+ * 中文词组拼音词典 (Chinese Phrase Pinyin Dictionary)
+ * 数据来源: extracted_data/zh/phrase_pinyin.txt
+ * 用途：解决多音字上下文选择问题
+ * ========================================================================== */
+
+/**
+ * 从文本文件加载中文词组拼音词典
+ * 
+ * @param file_path 文本文件路径（格式：词<Tab>拼音）
+ * @return 词组词典对象，失败返回 NULL
+ * 
+ * 示例数据：
+ *   长城<Tab>cháng chéng
+ *   长大<Tab>zhǎng dà
+ *   银行<Tab>yín háng
+ */
+ZhPhraseDict* misaki_zh_phrase_dict_load(const char *file_path);
+
+/**
+ * 释放词组词典
+ * 
+ * @param dict 词组词典对象
+ */
+void misaki_zh_phrase_dict_free(ZhPhraseDict *dict);
+
+/**
+ * 查询词组拼音
+ * 
+ * @param dict 词组词典
+ * @param phrase 词组文本（UTF-8）
+ * @param pinyins 输出：拼音字符串（空格分隔，如 "cháng chéng"）
+ * @return 成功返回 true
+ */
+bool misaki_zh_phrase_dict_lookup(const ZhPhraseDict *dict,
+                                  const char *phrase,
+                                  const char **pinyins);
+
+/**
+ * 获取词组词典统计信息
+ * 
+ * @param dict 词组词典对象
+ * @return 词组数量
+ */
+int misaki_zh_phrase_dict_count(const ZhPhraseDict *dict);
+
+/* ============================================================================
  * 日文词汇表 (Japanese Vocabulary)
  * 数据来源: extracted_data/ja/vocab.txt
  * ========================================================================== */

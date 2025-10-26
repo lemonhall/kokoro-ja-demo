@@ -9,8 +9,10 @@
 
 #include "misaki_dict.h"
 #include "misaki_string.h"
+#include "misaki_trie.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 /* ============================================================================
  * 英文词典实现
@@ -486,4 +488,97 @@ void misaki_ja_vocab_stats(const JaVocab *vocab,
         }
         *avg_word_length = vocab->count > 0 ? total_len / vocab->count : 0;
     }
+}
+
+/* ============================================================================
+ * 中文词组拼音词典实现
+ * ========================================================================== */
+
+ZhPhraseDict* misaki_zh_phrase_dict_load(const char *file_path) {
+    if (!file_path) {
+        return NULL;
+    }
+    
+    // 创建词组词典对象
+    ZhPhraseDict *dict = (ZhPhraseDict *)calloc(1, sizeof(ZhPhraseDict));
+    if (!dict) {
+        return NULL;
+    }
+    
+    // 创建 Trie 树
+    dict->phrase_trie = misaki_trie_create();
+    if (!dict->phrase_trie) {
+        free(dict);
+        return NULL;
+    }
+    
+    dict->count = 0;
+    
+    // 打开文件
+    FILE *f = fopen(file_path, "r");
+    if (!f) {
+        misaki_trie_free(dict->phrase_trie);
+        free(dict);
+        return NULL;
+    }
+    
+    // 逐行读取：词<Tab>拼音
+    char line[1024];
+    while (fgets(line, sizeof(line), f)) {
+        // 移除换行符
+        line[strcspn(line, "\n")] = 0;
+        
+        // 查找 Tab 分隔符
+        char *tab = strchr(line, '\t');
+        if (!tab) {
+            continue;  // 跳过格式错误的行
+        }
+        
+        // 分割词和拼音
+        *tab = '\0';
+        char *phrase = line;
+        char *pinyin = tab + 1;
+        
+        // 插入 Trie（将拼音存储在 tag 字段）
+        if (misaki_trie_insert(dict->phrase_trie, phrase, 1.0, pinyin)) {
+            dict->count++;
+        }
+    }
+    
+    fclose(f);
+    return dict;
+}
+
+void misaki_zh_phrase_dict_free(ZhPhraseDict *dict) {
+    if (!dict) {
+        return;
+    }
+    
+    if (dict->phrase_trie) {
+        misaki_trie_free(dict->phrase_trie);
+    }
+    
+    free(dict);
+}
+
+bool misaki_zh_phrase_dict_lookup(const ZhPhraseDict *dict,
+                                  const char *phrase,
+                                  const char **pinyins) {
+    if (!dict || !phrase || !pinyins) {
+        return false;
+    }
+    
+    // 查询 Trie 树
+    TrieMatch match;
+    if (misaki_trie_match_longest(dict->phrase_trie, phrase, 0, &match)) {
+        // 找到，返回 tag（拼音字符串）
+        *pinyins = match.tag;
+        return true;
+    }
+    
+    return false;
+}
+
+int misaki_zh_phrase_dict_count(const ZhPhraseDict *dict) {
+    return dict ? dict->count : 0;
 }

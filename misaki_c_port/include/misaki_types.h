@@ -107,6 +107,23 @@ typedef struct {
 } ZhDict;
 
 /**
+ * 中文词组拼音词典
+ * 
+ * 用于解决多音字上下文选择问题
+ * 数据来源: pypinyin 的 phrases_dict.json（47,111 词组）
+ * 
+ * 示例:
+ *   词组 "长城" → 拼音 "cháng chéng"
+ *   词组 "长大" → 拼音 "zhǎng dà"
+ * 
+ * 使用 Trie 树存储，查询效率 O(m)，m 为词长
+ */
+typedef struct {
+    struct Trie *phrase_trie;     // 存储词组拼音的 Trie 树（前向声明）
+    int count;                     // 词组数量
+} ZhPhraseDict;
+
+/**
  * 日文词汇条目
  * 
  * 对应数据: ja/vocab.txt
@@ -230,7 +247,8 @@ typedef struct {
     // 词典数据
     EnDict *en_dict_us;        // 美式英语词典
     EnDict *en_dict_gb;        // 英式英语词典
-    ZhDict *zh_dict;           // 中文拼音词典
+    ZhDict *zh_dict;           // 中文拼音词典（单字）
+    ZhPhraseDict *zh_phrase_dict;  // 中文词组拼音词典（解决多音字）
     JaVocab *ja_vocab;         // 日文词汇表
     
     // 分词数据

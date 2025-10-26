@@ -27,6 +27,7 @@ typedef struct {
     // 词典
     EnDict *en_dict_us;
     ZhDict *zh_dict;
+    ZhPhraseDict *zh_phrase_dict;  // 中文词组拼音词典（解决多音字）
     
     // 分词器
     void *zh_tokenizer;
@@ -70,27 +71,62 @@ bool init_app(MisakiApp *app, const char *data_dir) {
         printf("   ⚠️  无法加载中文拼音词典\n");
     }
     
+    // ⭐ 2.5. 加载中文词组拼音词典（解决多音字）
+    char zh_phrase_dict_path[512];
+    snprintf(zh_phrase_dict_path, sizeof(zh_phrase_dict_path), "%s/zh/phrase_pinyin.txt", data_dir);
+    printf("📖 加载中文词组拼音词典: %s\n", zh_phrase_dict_path);
+    
+    app->zh_phrase_dict = misaki_zh_phrase_dict_load(zh_phrase_dict_path);
+    if (app->zh_phrase_dict) {
+        int phrase_count = misaki_zh_phrase_dict_count(app->zh_phrase_dict);
+        printf("   ✅ 成功加载 %d 个词组拼音 [解决多音字]\n", phrase_count);
+    } else {
+        printf("   ⚠️  无法加载词组拼音词典（将使用默认单字拼音）\n");
+    }
+    
     // 3. 加载中文词汇词典（用于分词）
-    // 优先使用大词典 dict_full.txt，如果不存在则使用 dict.txt
+    // 优先级：dict_merged.txt > dict_full.txt > dict.txt
     if (app->zh_dict) {
         char zh_word_dict_path[512];
         char zh_word_dict_full_path[512];
+        char zh_word_dict_merged_path[512];
         
-        // 尝试加载大词典
+        // 尝试加载合并词典（最优先）
+        snprintf(zh_word_dict_merged_path, sizeof(zh_word_dict_merged_path), 
+                 "%s/zh/dict_merged.txt", data_dir);
         snprintf(zh_word_dict_full_path, sizeof(zh_word_dict_full_path), 
                  "%s/zh/dict_full.txt", data_dir);
         snprintf(zh_word_dict_path, sizeof(zh_word_dict_path), 
                  "%s/zh/dict.txt", data_dir);
         
-        // 检查大词典是否存在
-        FILE *test_file = fopen(zh_word_dict_full_path, "r");
-        bool use_full_dict = (test_file != NULL);
+        // 检查词典文件存在性
+        FILE *test_file = fopen(zh_word_dict_merged_path, "r");
+        bool use_merged_dict = (test_file != NULL);
         if (test_file) {
             fclose(test_file);
         }
         
-        const char *selected_dict = use_full_dict ? zh_word_dict_full_path : zh_word_dict_path;
-        const char *dict_type = use_full_dict ? "大词典" : "基础词典";
+        const char *selected_dict = NULL;
+        const char *dict_type = NULL;
+        
+        if (use_merged_dict) {
+            selected_dict = zh_word_dict_merged_path;
+            dict_type = "合并词典（含专有名词）";
+        } else {
+            test_file = fopen(zh_word_dict_full_path, "r");
+            bool use_full_dict = (test_file != NULL);
+            if (test_file) {
+                fclose(test_file);
+            }
+            
+            if (use_full_dict) {
+                selected_dict = zh_word_dict_full_path;
+                dict_type = "大词典";
+            } else {
+                selected_dict = zh_word_dict_path;
+                dict_type = "基础词典";
+            }
+        }
         
         printf("📖 加载中文词汇词典 (%s): %s\n", dict_type, selected_dict);
         
@@ -163,6 +199,9 @@ void cleanup_app(MisakiApp *app) {
     }
     if (app->zh_dict) {
         misaki_zh_dict_free(app->zh_dict);
+    }
+    if (app->zh_phrase_dict) {
+        misaki_zh_phrase_dict_free(app->zh_phrase_dict);
     }
     if (app->zh_tokenizer) {
         misaki_zh_tokenizer_free(app->zh_tokenizer);
@@ -283,7 +322,7 @@ void process_text(MisakiApp *app, const char *text) {
         case LANG_CHINESE:
             if (app->zh_dict && app->zh_tokenizer) {
                 printf("🔤 中文 G2P 转换中...\n\n");
-                tokens = misaki_zh_g2p(app->zh_dict, app->zh_tokenizer, text, &options);
+                tokens = misaki_zh_g2p(app->zh_dict, app->zh_phrase_dict, app->zh_tokenizer, text, &options);
             } else {
                 printf("❌ 中文词典或分词器未加载\n");
             }

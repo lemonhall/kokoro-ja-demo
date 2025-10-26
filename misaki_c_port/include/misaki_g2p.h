@@ -106,13 +106,15 @@ char* misaki_zh_pinyin_to_ipa(const char *pinyin);
 /**
  * 中文 G2P 转换（汉字 → 拼音 → IPA）
  * 
- * @param dict 中文词典
+ * @param dict 中文词典（单字拼音）
+ * @param phrase_dict 词组拼音词典（解决多音字，可为 NULL）
  * @param tokenizer 中文分词器
  * @param text 中文文本
  * @param options G2P 选项（可为 NULL）
  * @return Token 列表（每个 Token 包含音素），失败返回 NULL
  */
 MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
+                               const ZhPhraseDict *phrase_dict,
                                void *tokenizer,
                                const char *text,
                                const G2POptions *options);

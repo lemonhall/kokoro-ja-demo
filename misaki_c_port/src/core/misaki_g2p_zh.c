@@ -308,7 +308,52 @@ char* misaki_zh_pinyin_to_ipa(const char *pinyin) {
  * 中文 G2P 主函数
  * ========================================================================== */
 
+/**
+ * 将词组拼音（空格分隔）转换为 IPA
+ * 
+ * @param phrase_pinyin 拼音字符串（如 "cháng chéng"）
+ * @return IPA 字符串（需要 free）
+ */
+static char* convert_phrase_pinyin_to_ipa(const char *phrase_pinyin) {
+    if (!phrase_pinyin) {
+        return NULL;
+    }
+    
+    char result[512] = {0};
+    int result_pos = 0;
+    
+    // 复制一份用于 strtok
+    char *copy = misaki_strdup(phrase_pinyin);
+    if (!copy) {
+        return NULL;
+    }
+    
+    // 按空格分割拼音
+    char *token = strtok(copy, " ");
+    while (token) {
+        // 转换单个拼音为 IPA
+        char *ipa = misaki_zh_pinyin_to_ipa(token);
+        if (ipa) {
+            int len = strlen(ipa);
+            if (result_pos + len + 1 < 512) {
+                if (result_pos > 0) {
+                    result[result_pos++] = ' ';
+                }
+                strcpy(result + result_pos, ipa);
+                result_pos += len;
+            }
+            free(ipa);
+        }
+        
+        token = strtok(NULL, " ");
+    }
+    
+    free(copy);
+    return result_pos > 0 ? misaki_strdup(result) : NULL;
+}
+
 MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
+                               const ZhPhraseDict *phrase_dict,
                                void *tokenizer,
                                const char *text,
                                const G2POptions *options) {
@@ -323,6 +368,7 @@ MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
     }
     
     // 2. 为每个 Token 查询拼音并转换为 IPA
+    // ⭐ 优化：优先使用词组拼音（解决多音字问题）
     for (int i = 0; i < tokens->count; i++) {
         MisakiToken *token = &tokens->tokens[i];
         
@@ -331,7 +377,19 @@ MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
             continue;
         }
         
-        // 拼接所有字的 IPA
+        // ⭐ 优先查询词组拼音词典
+        const char *phrase_pinyin = NULL;
+        if (phrase_dict && 
+            misaki_zh_phrase_dict_lookup(phrase_dict, token->text, &phrase_pinyin)) {
+            // 找到词组拼音，直接转换为 IPA
+            char *ipa = convert_phrase_pinyin_to_ipa(phrase_pinyin);
+            if (ipa) {
+                token->phonemes = ipa;
+                continue;  // 处理下一个 token
+            }
+        }
+        
+        // 降级：逐字查询单字拼音
         char ipa_result[512] = {0};
         int ipa_pos = 0;
         

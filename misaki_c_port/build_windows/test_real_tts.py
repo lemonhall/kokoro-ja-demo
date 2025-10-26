@@ -156,5 +156,5 @@ def main(text):
 
 
 if __name__ == "__main__":
-    text = sys.argv[1] if len(sys.argv) > 1 else "这个项目预算大约是1,500,000元"
+    text = sys.argv[1] if len(sys.argv) > 1 else "当人们说起人工智能时，通常指的是机器学习和深度学习技术"
     main(text)

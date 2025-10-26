@@ -45,6 +45,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_g2p_ja.c
     ${MISAKI_SRC_DIR}/core/misaki_kana_map.c
     ${MISAKI_SRC_DIR}/core/misaki_lang_detect.c  # 新增：语言检测模块
+    ${MISAKI_SRC_DIR}/api/misaki_api.c  # 新增：导出 API
     ${MISAKI_SRC_DIR}/util/tsv_parser.c
 )
 

@@ -276,13 +276,23 @@ static MisakiLanguage convert_lang_type(MisakiLanguage new_lang) {
  * ========================================================================== */
 
 void process_text(MisakiApp *app, const char *text) {
+    process_text_ex(app, text, false);
+}
+
+void process_text_quiet(MisakiApp *app, const char *text) {
+    process_text_ex(app, text, true);
+}
+
+void process_text_ex(MisakiApp *app, const char *text, bool quiet) {
     if (!text || !*text) {
         return;
     }
     
-    printf("════════════════════════════════════════════════════════════\n");
-    printf("📝 输入文本: %s\n", text);
-    printf("════════════════════════════════════════════════════════════\n\n");
+    if (!quiet) {
+        printf("════════════════════════════════════════════════════════════\n");
+        printf("📝 输入文本: %s\n", text);
+        printf("════════════════════════════════════════════════════════════\n\n");
+    }
     
     // 检测语言（使用新模块）
     MisakiLanguage lang;
@@ -296,32 +306,38 @@ void process_text(MisakiApp *app, const char *text) {
         confidence = result.confidence;
         reason = result.reason;
         
-        printf("🌏 检测语言: %s (置信度: %.2f%%, 原因: %s)\n", 
-               misaki_language_name(lang), confidence * 100, reason);
-        
-        // 显示字符集统计
-        if (result.charset.total_chars > 0) {
-            printf("📊 字符统计: ");
-            if (result.charset.hiragana_count > 0) {
-                printf("平假名=%d ", result.charset.hiragana_count);
+        if (!quiet) {
+            printf("🌏 检测语言: %s (置信度: %.2f%%, 原因: %s)\n", 
+                   misaki_language_name(lang), confidence * 100, reason);
+            
+            // 显示字符集统计
+            if (result.charset.total_chars > 0) {
+                printf("📊 字符统计: ");
+                if (result.charset.hiragana_count > 0) {
+                    printf("平假名=%d ", result.charset.hiragana_count);
+                }
+                if (result.charset.katakana_count > 0) {
+                    printf("片假名=%d ", result.charset.katakana_count);
+                }
+                if (result.charset.kanji_count > 0) {
+                    printf("汉字=%d ", result.charset.kanji_count);
+                }
+                if (result.charset.latin_count > 0) {
+                    printf("拉丁=%d ", result.charset.latin_count);
+                }
+                printf("总计=%d\n", result.charset.total_chars);
             }
-            if (result.charset.katakana_count > 0) {
-                printf("片假名=%d ", result.charset.katakana_count);
-            }
-            if (result.charset.kanji_count > 0) {
-                printf("汉字=%d ", result.charset.kanji_count);
-            }
-            if (result.charset.latin_count > 0) {
-                printf("拉丁=%d ", result.charset.latin_count);
-            }
-            printf("总计=%d\n", result.charset.total_chars);
         }
     } else {
         // 降级到快速检测
         lang = misaki_lang_detect_quick(text);
-        printf("🌏 检测语言: %s (快速模式)\n", misaki_language_name(lang));
+        if (!quiet) {
+            printf("🌏 检测语言: %s (快速模式)\n", misaki_language_name(lang));
+        }
     }
-    printf("\n");
+    if (!quiet) {
+        printf("\n");
+    }
     
     // 根据语言调用不同的 G2P
     MisakiTokenList *tokens = NULL;
@@ -330,68 +346,93 @@ void process_text(MisakiApp *app, const char *text) {
     switch (lang) {
         case LANG_ENGLISH:
             if (app->en_dict_us) {
-                printf("🔤 英文 G2P 转换中...\n\n");
+                if (!quiet) {
+                    printf("🔤 英文 G2P 转换中...\n\n");
+                }
                 tokens = misaki_en_g2p(app->en_dict_us, text, &options);
             } else {
-                printf("❌ 英文词典未加载\n");
+                if (!quiet) {
+                    printf("❌ 英文词典未加载\n");
+                }
             }
             break;
             
         case LANG_CHINESE:
             if (app->zh_dict && app->zh_tokenizer) {
-                printf("🔤 中文 G2P 转换中...\n\n");
+                if (!quiet) {
+                    printf("🔤 中文 G2P 转换中...\n\n");
+                }
                 tokens = misaki_zh_g2p(app->zh_dict, app->zh_phrase_dict, app->zh_tokenizer, text, &options);
             } else {
-                printf("❌ 中文词典或分词器未加载\n");
+                if (!quiet) {
+                    printf("❌ 中文词典或分词器未加载\n");
+                }
             }
             break;
             
         case LANG_JAPANESE:
             if (app->ja_tokenizer && app->ja_trie) {
-                printf("🔤 日文 G2P 转换中...\n\n");
-                
+                if (!quiet) {
+                    printf("🔤 日文 G2P 转换中...\n\n");
+                }
                 // ⭐ 使用统一的 G2P 函数
                 tokens = misaki_ja_g2p(app->ja_trie, app->ja_tokenizer, text, &options);
             } else {
-                printf("❌ 日文分词器或词典未加载\n");
+                if (!quiet) {
+                    printf("❌ 日文分词器或词典未加载\n");
+                }
             }
             break;
             
         default:
-            printf("❌ 无法识别语言\n");
+            if (!quiet) {
+                printf("❌ 无法识别语言\n");
+            }
             break;
     }
     
     // 显示结果
     if (tokens) {
-        printf("📊 分词结果:\n");
-        printf("────────────────────────────────────────────────────────────\n");
-        misaki_g2p_print(tokens, true);
-        printf("────────────────────────────────────────────────────────────\n\n");
-        
-        // 合并音素
-        char *merged = misaki_merge_phonemes(tokens, " ");
-        if (merged) {
-            printf("🎵 音素序列: %s\n\n", merged);
-            free(merged);
+        if (quiet) {
+            // 安静模式：仅输出音素序列
+            char *merged = misaki_merge_phonemes(tokens, " ");
+            if (merged) {
+                printf("%s\n", merged);
+                free(merged);
+            }
+        } else {
+            // 正常模式：完整输出
+            printf("📊 分词结果:\n");
+            printf("────────────────────────────────────────────────────────────\n");
+            misaki_g2p_print(tokens, true);
+            printf("────────────────────────────────────────────────────────────\n\n");
+            
+            // 合并音素
+            char *merged = misaki_merge_phonemes(tokens, " ");
+            if (merged) {
+                printf("🎵 音素序列: %s\n\n", merged);
+                free(merged);
+            }
+            
+            // 统计信息
+            int total_phonemes = 0;
+            int oov_count = 0;
+            double avg_phonemes = 0.0;
+            misaki_g2p_stats(tokens, &total_phonemes, &oov_count, &avg_phonemes);
+            
+            printf("📈 统计信息:\n");
+            printf("   - 总词数: %d\n", tokens->count);
+            printf("   - 总音素数: %d\n", total_phonemes);
+            printf("   - 未登录词: %d\n", oov_count);
+            printf("   - 平均音素/词: %.2f\n", avg_phonemes);
         }
-        
-        // 统计信息
-        int total_phonemes = 0;
-        int oov_count = 0;
-        double avg_phonemes = 0.0;
-        misaki_g2p_stats(tokens, &total_phonemes, &oov_count, &avg_phonemes);
-        
-        printf("📈 统计信息:\n");
-        printf("   - 总词数: %d\n", tokens->count);
-        printf("   - 总音素数: %d\n", total_phonemes);
-        printf("   - 未登录词: %d\n", oov_count);
-        printf("   - 平均音素/词: %.2f\n", avg_phonemes);
         
         misaki_token_list_free(tokens);
     }
     
-    printf("\n");
+    if (!quiet) {
+        printf("\n");
+    }
 }
 
 /* ============================================================================
@@ -488,12 +529,14 @@ void print_usage(const char *prog_name) {
     printf("  -h, --help           显示帮助信息\n");
     printf("  -v, --version        显示版本信息\n");
     printf("  -d, --data <目录>    指定数据目录（默认: ../extracted_data）\n");
-    printf("  -i, --interactive    交互模式\n\n");
+    printf("  -i, --interactive    交互模式\n");
+    printf("  -q, --quiet          安静模式（仅输出音素）\n\n");
     printf("示例:\n");
     printf("  %s \"Hello world\"              # 转换英文文本\n", prog_name);
     printf("  %s \"你好世界\"                  # 转换中文文本\n", prog_name);
     printf("  %s -i                          # 进入交互模式\n", prog_name);
-    printf("  %s -d ./data \"Hello\"           # 指定数据目录\n\n", prog_name);
+    printf("  %s -d ./data \"Hello\"           # 指定数据目录\n", prog_name);
+    printf("  %s -q \"こんにちは\"              # 安静模式，仅输出音素\n\n", prog_name);
 }
 
 /* ============================================================================
@@ -504,6 +547,7 @@ int main(int argc, char *argv[]) {
     MisakiApp app;
     const char *data_dir = "../extracted_data";
     bool interactive = false;
+    bool quiet_mode = false;  // 安静模式
     const char *text_to_process = NULL;
     
     // 解析命令行参数
@@ -523,6 +567,8 @@ int main(int argc, char *argv[]) {
             }
         } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--interactive") == 0) {
             interactive = true;
+        } else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0) {
+            quiet_mode = true;
         } else {
             text_to_process = argv[i];
         }
@@ -530,7 +576,9 @@ int main(int argc, char *argv[]) {
     
     // 初始化应用
     if (!init_app(&app, data_dir)) {
-        fprintf(stderr, "错误: 初始化失败\n");
+        if (!quiet_mode) {
+            fprintf(stderr, "错误: 初始化失败\n");
+        }
         return 1;
     }
     
@@ -538,7 +586,11 @@ int main(int argc, char *argv[]) {
     if (interactive || text_to_process == NULL) {
         interactive_mode(&app);
     } else {
-        process_text(&app, text_to_process);
+        if (quiet_mode) {
+            process_text_quiet(&app, text_to_process);
+        } else {
+            process_text(&app, text_to_process);
+        }
     }
     
     // 清理

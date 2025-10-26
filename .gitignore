@@ -2,10 +2,19 @@
 __pycache__/
 *.py[oc]
 build/
-build_windows/
 dist/
 wheels/
 *.egg-info
+
+# C/C++ 构建产物
+misaki_c_port/build_windows/CMakeFiles/
+misaki_c_port/build_windows/CMakeCache.txt
+misaki_c_port/build_windows/cmake_install.cmake
+misaki_c_port/build_windows/Makefile
+misaki_c_port/build_windows/*.a
+misaki_c_port/build_windows/*.dll.a
+misaki_c_port/build_windows/*.log
+# 注意：保留 *.dll 和 *.exe，编译一次太费劲
 
 # Virtual environments
 .venv

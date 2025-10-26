@@ -50,8 +50,8 @@ static const PinyinIPAMap initials_map[] = {
     {"z", "ts"},
     {"c", "tsʰ"},
     {"s", "s"},
-    {"y", "j"},  // ⭐ 添加：介音 y -> j
-    {"w", "w"},  // ⭐ 添加：介音 w -> w
+    // 注意：y 和 w 不是声母，而是介音
+    // yu, ya 等应该被识别为零声母 + 韵母
     {NULL, NULL}
 };
 
@@ -90,7 +90,7 @@ static const PinyinIPAMap finals_map[] = {
     {"ing", "iŋ"},
     {"ong", "ʊŋ"},
     
-    // 特殊韵母
+    // 特殊韵母（含介音）
     {"ia", "iɑ"},
     {"iao", "iɑʊ"},
     {"ian", "iɛn"},
@@ -101,6 +101,36 @@ static const PinyinIPAMap finals_map[] = {
     {"uai", "uaɪ"},
     {"uan", "uan"},
     {"uang", "uɑŋ"},
+    
+    // ⭐ 修复：y- 和 w- 开头的韵母（零声母）
+    // 这些在汉语拼音中是零声母 + 韵母的组合
+    {"yi", "i"},      // 衣 yi → i
+    {"ya", "iɑ"},     // 呀 ya → ia
+    {"yao", "iɑʊ"},   // 腰 yao → iao
+    {"yan", "iɛn"},   // 烟 yan → ian
+    {"yang", "iɑŋ"},  // 央 yang → iang
+    {"ye", "iɛ"},     // 耶 ye → ie
+    {"yong", "iʊŋ"},  // 雍 yong → iong
+    {"you", "iʊ"},    // 优 you → iu
+    {"yin", "in"},    // 因 yin → in
+    {"ying", "iŋ"},   // 英 ying → ing
+    
+    // ⭐ 修复：yu 系列（关键！）
+    {"yu", "y"},      // 余/鱼 yu → ü (IPA: y)
+    {"yue", "yɛ"},    // 月 yue → üe
+    {"yuan", "yan"},  // 元 yuan → üan (IPA: yan)
+    {"yun", "yn"},    // 云 yun → ün
+    
+    // w- 开头的韵母
+    {"wu", "u"},      // 乌 wu → u
+    {"wa", "uɑ"},     // 蛙 wa → ua
+    {"wai", "uaɪ"},   // 歪 wai → uai
+    {"wan", "uan"},   // 弯 wan → uan
+    {"wang", "uɑŋ"},  // 汪 wang → uang
+    {"wo", "uo"},     // 窝 wo → uo
+    {"wei", "ueɪ"},   // 威 wei → ui
+    {"wen", "un"},    // 温 wen → un
+    {"weng", "uəŋ"},  // 翁 weng → ueng
     
     {NULL, NULL}
 };
@@ -243,6 +273,13 @@ static void split_initial_final(const char *pinyin, char *initial, char *final) 
         return;
     }
     
+    // ⭐ 修复：优先检查是否整个拼音就是一个韵母（y- 和 w- 开头的情况）
+    // 这些是零声母 + 韵母的组合，不应该被拆分
+    if (find_final_ipa(pinyin)) {
+        strcpy(final, pinyin);
+        return;
+    }
+    
     // 尝试匹配两字母声母（zh, ch, sh）
     if (strlen(pinyin) >= 2) {
         char two_char[3] = {pinyin[0], pinyin[1], '\0'};
@@ -253,7 +290,7 @@ static void split_initial_final(const char *pinyin, char *initial, char *final) 
         }
     }
     
-    // 尝试匹配单字母声母（包括 y, w）
+    // 尝试匹配单字母声母
     char one_char[2] = {pinyin[0], '\0'};
     if (find_initial_ipa(one_char)) {
         strcpy(initial, one_char);

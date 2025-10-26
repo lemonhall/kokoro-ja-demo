@@ -77,23 +77,29 @@ def get_case(index):
         return jsonify(case)
     return jsonify({'error': 'Invalid index'}), 404
 
-@app.route('/api/review', methods=['POST'])
-def save_review():
-    """保存审听评价"""
-    data = request.json
-    case_id = data.get('id')
-    status = data.get('status')  # 'c_ok', 'c_fail', 'both_fail'
-    note = data.get('note', '')
-    
-    reviews = load_reviews()
-    reviews[case_id] = {
-        'status': status,
-        'note': note,
-        'timestamp': data.get('timestamp', '')
-    }
-    save_reviews(reviews)
-    
-    return jsonify({'success': True, 'reviewed_count': len(reviews)})
+@app.route('/api/review', methods=['POST', 'GET'])
+def handle_review():
+    """保存或获取审听评价"""
+    if request.method == 'POST':
+        # 保存评价
+        data = request.json
+        case_id = data.get('id')
+        status = data.get('status')  # 'c_ok', 'c_fail', 'both_fail'
+        note = data.get('note', '')
+        
+        reviews = load_reviews()
+        reviews[case_id] = {
+            'status': status,
+            'note': note,
+            'timestamp': data.get('timestamp', '')
+        }
+        save_reviews(reviews)
+        
+        return jsonify({'success': True, 'reviewed_count': len(reviews)})
+    else:
+        # 获取所有评价
+        reviews = load_reviews()
+        return jsonify(reviews)
 
 @app.route('/audio/<path:filename>')
 def serve_audio(filename):

@@ -111,13 +111,13 @@ static const PinyinIPAMap finals_map[] = {
     
     // ===== 后鼻韵母 (9个) =====
     {"ang", "ɑŋ"},    // 开后鼻尾韵
-    {"eng", "ɤŋ"},    // 半闭后鼻尾韵（注意：不是 əŋ）
+    {"eng", "əŋ"},    // ⭐ 修复：半开央鼻尾韵（用 ə 而非 ɤ，避免"河南口音"）
     {"ing", "iŋ"},    // 闭前鼻尾韵
     {"ong", "ʊŋ"},    // 半闭后圆唇鼻尾韵
     {"iang", "iɑŋ"},  // 前展后鼻韵
     {"iong", "iʊŋ"},  // 前展后圆鼻韵
     {"uang", "uɑŋ"},  // 后圆后鼻韵
-    {"ueng", "uɤŋ"},  // ⭐ weng 的韵母形式（重要！）
+    {"ueng", "uəŋ"},  // ⭐ 修复：weng 的韵母形式（与 eng 一致使用 ə）
     
     // ===== 其他复合韵母 (5个) =====
     {"ia", "iɑ"},     // 前展复合韵
@@ -498,6 +498,9 @@ char* misaki_zh_pinyin_to_ipa(const char *pinyin) {
 /**
  * 将词组拼音（空格分隔）转换为 IPA
  * 
+ * ⭐ 关键：词内音节不加空格，保持连读（避免"河南老表"口音）
+ * 例如："xiang4 mu4" → "ɕjaŋmu" (连读，无空格)
+ * 
  * @param phrase_pinyin 拼音字符串（如 "cháng chéng"）
  * @return IPA 字符串（需要 free）
  */
@@ -515,17 +518,15 @@ static char* convert_phrase_pinyin_to_ipa(const char *phrase_pinyin) {
         return NULL;
     }
     
-    // 按空格分割拼音
+    // 按空格分割拼音，但拼接时不加空格（词内连读）
     char *token = strtok(copy, " ");
     while (token) {
         // 转换单个拼音为 IPA
         char *ipa = misaki_zh_pinyin_to_ipa(token);
         if (ipa) {
             int len = strlen(ipa);
-            if (result_pos + len + 1 < 512) {
-                if (result_pos > 0) {
-                    result[result_pos++] = ' ';
-                }
+            if (result_pos + len < 512) {
+                // ⭐ 修复：词内音节直接拼接，不加空格（连读）
                 strcpy(result + result_pos, ipa);
                 result_pos += len;
             }
@@ -585,6 +586,7 @@ MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
         }
         
         // 降级：逐字查询单字拼音
+        // ⭐ 修复：词内音节不加空格，保持连读（避免"一字一顿"）
         char ipa_result[512] = {0};
         int ipa_pos = 0;
         
@@ -603,10 +605,8 @@ MisakiTokenList* misaki_zh_g2p(const ZhDict *dict,
                     char *ipa = misaki_zh_pinyin_to_ipa(pinyins[0]);
                     if (ipa) {
                         int len = strlen(ipa);
-                        if (ipa_pos + len + 1 < 512) {
-                            if (ipa_pos > 0) {
-                                ipa_result[ipa_pos++] = ' ';
-                            }
+                        if (ipa_pos + len < 512) {
+                            // ⭐ 修复：词内音节直接拼接，不加空格（连读）
                             strcpy(ipa_result + ipa_pos, ipa);
                             ipa_pos += len;
                         }

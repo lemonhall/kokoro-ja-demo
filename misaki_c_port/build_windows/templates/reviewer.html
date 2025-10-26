@@ -556,6 +556,10 @@
         let totalCases = 0;
         let currentStatus = null;
         const STORAGE_KEY = 'tts_reviewer_last_index';
+        
+        // 跟踪音频播放状态
+        let hasPlayedC = false;
+        let hasPlayedPy = false;
 
         // 页面加载时初始化
         window.onload = function() {
@@ -605,6 +609,13 @@
             const audio = type === 'c' ? document.getElementById('cAudio') : document.getElementById('pyAudio');
             const playBtn = type === 'c' ? document.getElementById('cPlayBtn') : document.getElementById('pyPlayBtn');
             
+            // 记录播放状态
+            if (type === 'c') {
+                hasPlayedC = true;
+            } else {
+                hasPlayedPy = true;
+            }
+            
             // 添加播放动画
             playBtn.classList.add('playing');
             
@@ -629,6 +640,10 @@
                     }
 
                     currentIndex = index;
+                    
+                    // 重置播放状态
+                    hasPlayedC = false;
+                    hasPlayedPy = false;
                     
                     // 更新显示
                     document.getElementById('caseNumber').textContent = 
@@ -760,8 +775,29 @@
             }, 2000);
         }
 
+        // 检查是否需要确认
+        function checkBeforeNavigate() {
+            // 如果已经有评价，直接允许切换
+            if (currentStatus) {
+                return true;
+            }
+            
+            // 如果两个音频都播放过，但没有评价
+            if (hasPlayedC && hasPlayedPy) {
+                return confirm('您已经听过两个版本的音频，但还没有评价。\n\n确定要切换到下一组吗？');
+            }
+            
+            // 其他情况直接允许
+            return true;
+        }
+
         // 导航到有问题的组
         function navigateToProblem(direction) {
+            // 检查是否需要确认
+            if (!checkBeforeNavigate()) {
+                return; // 用户取消了
+            }
+            
             fetch('/api/stats')
                 .then(response => response.json())
                 .then(stats => {
@@ -822,6 +858,11 @@
 
         // 导航
         function navigate(direction) {
+            // 检查是否需要确认
+            if (!checkBeforeNavigate()) {
+                return; // 用户取消了
+            }
+            
             const newIndex = currentIndex + direction;
             if (newIndex >= 0 && newIndex < totalCases) {
                 // 保存当前位置到localStorage

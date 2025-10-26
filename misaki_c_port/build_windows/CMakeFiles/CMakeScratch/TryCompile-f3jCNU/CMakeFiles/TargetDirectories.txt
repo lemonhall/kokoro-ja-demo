@@ -1,3 +1,0 @@
-/mnt/e/development/kokoro-ja-demo/misaki_c_port/build_windows/CMakeFiles/CMakeScratch/TryCompile-f3jCNU/CMakeFiles/cmTC_c91c2.dir
-/mnt/e/development/kokoro-ja-demo/misaki_c_port/build_windows/CMakeFiles/CMakeScratch/TryCompile-f3jCNU/CMakeFiles/edit_cache.dir
-/mnt/e/development/kokoro-ja-demo/misaki_c_port/build_windows/CMakeFiles/CMakeScratch/TryCompile-f3jCNU/CMakeFiles/rebuild_cache.dir

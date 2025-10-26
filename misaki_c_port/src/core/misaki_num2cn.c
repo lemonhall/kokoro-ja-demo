@@ -67,6 +67,7 @@ static void convert_section(int num, char *buffer, int buffer_size, bool skip_on
             SAFE_APPEND(DIGITS[qian]);
         }
         SAFE_APPEND(UNITS[3]);  // 千
+        SAFE_APPEND(" ");  // ⭐ 单位后加空格
     }
     
     // 百位
@@ -81,6 +82,7 @@ static void convert_section(int num, char *buffer, int buffer_size, bool skip_on
             SAFE_APPEND(DIGITS[bai]);
         }
         SAFE_APPEND(UNITS[2]);  // 百
+        SAFE_APPEND(" ");  // ⭐ 单位后加空格
         has_zero = false;
     } else if (qian > 0 && (num % 100) > 0) {
         has_zero = true;
@@ -91,10 +93,12 @@ static void convert_section(int num, char *buffer, int buffer_size, bool skip_on
     if (shi > 0) {
         if (has_zero) {
             SAFE_APPEND(DIGITS[0]);  // 零
+            SAFE_APPEND(" ");  // ⭐ 零后加空格
         }
         if (shi == 1 && num < 20 && qian == 0 && bai == 0) {
             // 10-19: "十" 而不是 "一十"
             SAFE_APPEND(UNITS[1]);
+            SAFE_APPEND(" ");  // ⭐ 单位后加空格
         } else {
             if (shi == 2 && use_liang && qian == 0 && bai == 0) {
                 SAFE_APPEND("两");
@@ -102,6 +106,7 @@ static void convert_section(int num, char *buffer, int buffer_size, bool skip_on
                 SAFE_APPEND(DIGITS[shi]);
             }
             SAFE_APPEND(UNITS[1]);  // 十
+            SAFE_APPEND(" ");  // ⭐ 单位后加空格
         }
         has_zero = false;
     } else if ((qian > 0 || bai > 0) && (num % 10) > 0) {
@@ -113,11 +118,18 @@ static void convert_section(int num, char *buffer, int buffer_size, bool skip_on
     if (ge > 0) {
         if (has_zero) {
             SAFE_APPEND(DIGITS[0]);  // 零
+            SAFE_APPEND(" ");  // ⭐ 零后加空格
         }
         SAFE_APPEND(DIGITS[ge]);
+        // ⭐ 注意：个位数字后不加空格，由调用者决定
     }
     
     #undef SAFE_APPEND
+    
+    // ⭐ 移除末尾的空格
+    while (pos > 0 && result[pos - 1] == ' ') {
+        result[--pos] = '\0';
+    }
     
     // ⭐ 安全复制到输出缓冲区
     if (buffer_size > 0) {
@@ -145,6 +157,13 @@ bool misaki_int_to_chinese(long long num, char *buffer, int buffer_size, bool us
     }
     
     char result[1024] = {0};
+    int pos = 0;
+    
+    // 添加负号
+    if (is_negative) {
+        strcpy(result, "负 ");  // ⭐ 添加空格
+        pos = strlen(result);
+    }
     
     // 分解为各个段（每4位一段）
     int sections[4] = {0};  // 个、万、亿、兆
@@ -166,8 +185,11 @@ bool misaki_int_to_chinese(long long num, char *buffer, int buffer_size, bool us
         }
         
         // 添加零
-        if (need_zero && strlen(result) > 0) {
-            strcat(result, "零");
+        if (need_zero && pos > 0) {
+            if (pos + strlen("零 ") < sizeof(result)) {  // ⭐ 零后面也加空格
+                strcpy(result + pos, "零 ");
+                pos += strlen("零 ");
+            }
         }
         need_zero = false;
         
@@ -175,20 +197,26 @@ bool misaki_int_to_chinese(long long num, char *buffer, int buffer_size, bool us
         char section_str[256];
         bool skip_one = (i == section_count - 1 && sections[i] < 2000);
         convert_section(sections[i], section_str, sizeof(section_str), skip_one, use_liang);
-        strcat(result, section_str);
         
-        // 添加大单位
+        if (pos + strlen(section_str) < sizeof(result)) {
+            strcpy(result + pos, section_str);
+            pos += strlen(section_str);
+        }
+        
+        // ⭐ 添加大单位（并在后面加空格）
         if (i > 0) {
-            strcat(result, BIG_UNITS[i]);
+            if (pos + strlen(BIG_UNITS[i]) + 1 < sizeof(result)) {
+                strcpy(result + pos, BIG_UNITS[i]);
+                pos += strlen(BIG_UNITS[i]);
+                result[pos++] = ' ';  // 单位后面加空格
+                result[pos] = '\0';
+            }
         }
     }
     
-    // 添加负号
-    if (is_negative) {
-        char temp_result[1024];
-        strcpy(temp_result, "负");
-        strcat(temp_result, result);
-        strcpy(result, temp_result);
+    // 移除末尾的空格
+    while (pos > 0 && result[pos - 1] == ' ') {
+        result[--pos] = '\0';
     }
     
     snprintf(buffer, buffer_size, "%s", result);
@@ -233,8 +261,8 @@ bool misaki_float_to_chinese(double num, char *buffer, int buffer_size, bool use
     // 如果小数部分大于最小精度
     if (frac_part > DBL_EPSILON * 100) {  // 使用 DBL_EPSILON 而不是硬编码
         if (pos + 6 < sizeof(result)) {
-            strcpy(result + pos, "点");
-            pos += strlen("点");
+            strcpy(result + pos, "点 ");  // ⭐ 点后面加空格
+            pos += strlen("点 ");
         }
         
         // 提取小数位（最多6位）
@@ -249,16 +277,22 @@ bool misaki_float_to_chinese(double num, char *buffer, int buffer_size, bool use
                 // 逐位转换
                 int digit = *p - '0';
                 if (digit >= 0 && digit <= 9) {
-                    if (pos + strlen(DIGITS[digit]) < sizeof(result)) {
+                    if (pos + strlen(DIGITS[digit]) + 1 < sizeof(result)) {
                         strcpy(result + pos, DIGITS[digit]);
                         pos += strlen(DIGITS[digit]);
+                        result[pos++] = ' ';  // ⭐ 每个数字后加空格
+                        result[pos] = '\0';
                     }
                 }
                 p++;
             }
             
-            // 移除末尾的零
+            // 移除末尾的零和空格
             while (pos > 0) {
+                if (result[pos - 1] == ' ') {
+                    result[--pos] = '\0';
+                    continue;
+                }
                 int zero_len = strlen("零");
                 if (pos >= zero_len && strcmp(result + pos - zero_len, "零") == 0) {
                     pos -= zero_len;
@@ -368,7 +402,7 @@ bool misaki_num_string_to_chinese(const char *num_str, char *buffer, int buffer_
     
     // 百分比特殊处理
     if (has_percent) {
-        strcpy(result, "百分之");
+        strcpy(result, "百分之 ");  // ⭐ 后面加空格
     }
     
     // 判断是整数还是小数
@@ -386,8 +420,9 @@ bool misaki_num_string_to_chinese(const char *num_str, char *buffer, int buffer_
         strcat(result, num_cn);
     }
     
-    // 添加货币单位
+    // ⭐ 添加货币单位（前面加空格）
     if (has_currency) {
+        strcat(result, " ");
         strcat(result, currency_symbol);
     }
     

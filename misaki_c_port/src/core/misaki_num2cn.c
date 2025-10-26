@@ -451,48 +451,72 @@ bool misaki_convert_numbers_in_text(const char *text, char *output, int output_s
     int pos = 0;
     
     while (*p && pos < estimated_size - 1) {
-        // 检测数字开始
-        if (isdigit(*p) || *p == '-' || *p == '+' || *p == '¥' || *p == '$') {
-            // 提取完整的数字字符串
-            char num_str[256] = {0};
-            int num_pos = 0;
-            
-            while (*p && num_pos < 255) {
-                if (isdigit(*p) || *p == '.' || *p == ',' || *p == ' ' || 
-                    *p == '-' || *p == '+' || *p == '%' || *p == '¥' || *p == '$') {
-                    num_str[num_pos++] = *p++;
-                } else {
-                    break;
-                }
-            }
-            num_str[num_pos] = '\0';
-            
-            // 转换为中文
-            if (misaki_is_number(num_str)) {
-                char cn_num[512];
-                if (misaki_num_string_to_chinese(num_str, cn_num, sizeof(cn_num))) {
-                    int cn_len = strlen(cn_num);
-                    if (pos + cn_len < estimated_size - 1) {
-                        strcpy(result + pos, cn_num);
-                        pos += cn_len;
-                    } else {
-                        // ⭐ 缓冲区不够，截断
-                        break;
-                    }
-                }
+        // ⭐ 检测特殊格式（优先级：日期 > 时间 > 电话 > IP > 身份证 > 普通数字）
+        
+        // 提取当前可能的数字字符串
+        char candidate[256] = {0};
+        int candidate_len = 0;
+        const char *temp_p = p;
+        
+        // 提取完整的数字相关字符串
+        while (*temp_p && candidate_len < 255) {
+            if (isdigit(*temp_p) || *temp_p == '-' || *temp_p == '/' || *temp_p == ':' || 
+                *temp_p == '.' || *temp_p == '(' || *temp_p == ')' || *temp_p == ' ' ||
+                *temp_p == ',' || *temp_p == '+' || *temp_p == '%' || *temp_p == '¥' || *temp_p == '$') {
+                candidate[candidate_len++] = *temp_p++;
             } else {
-                // 不是数字，保持原样
-                int num_len = strlen(num_str);
-                if (pos + num_len < estimated_size - 1) {
-                    strcpy(result + pos, num_str);
-                    pos += num_len;
-                } else {
-                    break;
-                }
+                break;
             }
-        } else {
-            // 普通字符，直接复制
+        }
+        candidate[candidate_len] = '\0';
+        
+        // 如果没有提取到数字相关字符，直接复制当前字符
+        if (candidate_len == 0) {
             result[pos++] = *p++;
+            continue;
+        }
+        
+        // 按优先级检测并转换
+        char converted[512] = {0};
+        bool converted_success = false;
+        
+        // 1. 检测身份证号（保持原样）
+        if (misaki_is_id_number(candidate)) {
+            strcpy(converted, candidate);
+            converted_success = true;
+        }
+        // 2. 检测日期
+        else if (misaki_is_date(candidate)) {
+            converted_success = misaki_date_to_chinese(candidate, converted, sizeof(converted));
+        }
+        // 3. 检测时间
+        else if (misaki_is_time(candidate)) {
+            converted_success = misaki_time_to_chinese(candidate, converted, sizeof(converted));
+        }
+        // 4. 检测电话号码
+        else if (misaki_is_phone_number(candidate)) {
+            converted_success = misaki_phone_to_chinese(candidate, converted, sizeof(converted));
+        }
+        // 5. 检测IP地址
+        else if (misaki_is_ip_address(candidate)) {
+            converted_success = misaki_ip_to_chinese(candidate, converted, sizeof(converted));
+        }
+        // 6. 普通数字
+        else if (misaki_is_number(candidate)) {
+            converted_success = misaki_num_string_to_chinese(candidate, converted, sizeof(converted));
+        }
+        
+        // 如果转换成功，使用转换结果；否则保持原样
+        const char *to_append = converted_success ? converted : candidate;
+        int append_len = strlen(to_append);
+        
+        if (pos + append_len < estimated_size - 1) {
+            strcpy(result + pos, to_append);
+            pos += append_len;
+            p = temp_p;  // 移动指针
+        } else {
+            // ⭐ 缓冲区不够，截断
+            break;
         }
     }
     

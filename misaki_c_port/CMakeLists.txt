@@ -30,6 +30,7 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_viterbi.c
     ${MISAKI_SRC_DIR}/core/misaki_hmm.c  # 新增：中文 HMM 未登录词识别
     ${MISAKI_SRC_DIR}/core/misaki_num2cn.c  # 新增：数字转中文
+    ${MISAKI_SRC_DIR}/core/misaki_num2cn_ext.c  # 新增：数字特殊格式处理
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_zh.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_en.c

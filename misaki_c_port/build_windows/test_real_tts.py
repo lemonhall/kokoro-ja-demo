@@ -31,11 +31,13 @@ except ImportError as e:
 class MisakiCG2P:
     """C 语言版 Misaki G2P"""
     
-    def __init__(self, dll_path=None, data_dir=None):
+    def __init__(self, dll_path=None, data_dir=None, force_lang='zh'):
         if dll_path is None:
             dll_path = Path(__file__).parent / "libmisaki.dll"
         if data_dir is None:
             data_dir = "extracted_data"
+        
+        self.force_lang = force_lang
         
         old_cwd = os.getcwd()
         os.chdir(Path(dll_path).parent)
@@ -44,8 +46,11 @@ class MisakiCG2P:
         
         self.lib.misaki_init.argtypes = [ctypes.c_char_p]
         self.lib.misaki_init.restype = ctypes.c_int
-        self.lib.misaki_text_to_phonemes.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-        self.lib.misaki_text_to_phonemes.restype = ctypes.c_int
+        
+        # 使用带语言参数的API
+        self.lib.misaki_text_to_phonemes_lang.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+        self.lib.misaki_text_to_phonemes_lang.restype = ctypes.c_int
+        
         self.lib.misaki_cleanup.argtypes = []
         self.lib.misaki_cleanup.restype = None
         
@@ -55,7 +60,12 @@ class MisakiCG2P:
     
     def text_to_phonemes(self, text):
         output_buffer = ctypes.create_string_buffer(2048)
-        result = self.lib.misaki_text_to_phonemes(text.encode('utf-8'), output_buffer, len(output_buffer))
+        result = self.lib.misaki_text_to_phonemes_lang(
+            text.encode('utf-8'), 
+            self.force_lang.encode('utf-8'),
+            output_buffer, 
+            len(output_buffer)
+        )
         return output_buffer.value.decode('utf-8') if result == 0 else None
     
     def __del__(self):
@@ -156,5 +166,5 @@ def main(text):
 
 
 if __name__ == "__main__":
-    text = sys.argv[1] if len(sys.argv) > 1 else "心情新颖，经营音乐"
+    text = sys.argv[1] if len(sys.argv) > 1 else "我可以理解你的想法"
     main(text)

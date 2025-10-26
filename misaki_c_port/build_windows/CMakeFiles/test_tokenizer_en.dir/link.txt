@@ -1,3 +1,0 @@
-/usr/bin/cmake -E rm -f CMakeFiles/test_tokenizer_en.dir/objects.a
-/usr/bin/x86_64-w64-mingw32-ar qc CMakeFiles/test_tokenizer_en.dir/objects.a @CMakeFiles/test_tokenizer_en.dir/objects1.rsp
-/usr/bin/x86_64-w64-mingw32-gcc -O3 -DNDEBUG -Wl,--whole-archive CMakeFiles/test_tokenizer_en.dir/objects.a -Wl,--no-whole-archive -o test_tokenizer_en.exe -Wl,--out-implib,libtest_tokenizer_en.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/test_tokenizer_en.dir/linkLibs.rsp

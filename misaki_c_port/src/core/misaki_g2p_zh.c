@@ -19,7 +19,13 @@
  * 
  * 参考：
  * - https://en.wikipedia.org/wiki/Help:IPA/Mandarin
+ * - Standard Chinese phonology (维基百科)
  * - pypinyin 库的实现
+ * 
+ * 注意：
+ * 1. 汉语拼音 h → IPA /x/ （清软腭擦音，如 "hē" 喝）
+ * 2. 汉语拼音 x → IPA /ɕ/ （清龈腭擦音，如 "xī" 西）
+ * 3. 这两个是完全不同的音位，不要混淆！
  * ========================================================================== */
 
 typedef struct {
@@ -27,110 +33,96 @@ typedef struct {
     const char *ipa;     // IPA 音素（不带声调）
 } PinyinIPAMap;
 
-// 声母映射
+// 声母映射（21 个辅音声母 + 1 个零声母）
 static const PinyinIPAMap initials_map[] = {
-    {"b", "p"},
-    {"p", "pʰ"},
-    {"m", "m"},
-    {"f", "f"},
-    {"d", "t"},
-    {"t", "tʰ"},
-    {"n", "n"},
-    {"l", "l"},
-    {"g", "k"},
-    {"k", "kʰ"},
-    {"h", "x"},
-    {"j", "tɕ"},
-    {"q", "tɕʰ"},
-    {"x", "ɕ"},
-    {"zh", "ʈ͡ʂ"},
-    {"ch", "ʈ͡ʂʰ"},
-    {"sh", "ʂ"},
-    {"r", "ʐ"},
-    {"z", "ts"},
-    {"c", "tsʰ"},
-    {"s", "s"},
-    // 注意：y 和 w 不是声母，而是介音
-    // yu, ya 等应该被识别为零声母 + 韵母
+    {"", ""},       // 零声母（重要！用于 a, o, e, ai, ei, ao, ou 等）
+    
+    // 双唇音
+    {"b", "p"},      // 清不送气双唇塞音
+    {"p", "pʰ"},     // 清送气双唇塞音
+    {"m", "m"},      // 双唇鼻音
+    {"f", "f"},      // 清唇齿擦音
+    
+    // 舌尖中音
+    {"d", "t"},      // 清不送气舌尖塞音
+    {"t", "tʰ"},     // 清送气舌尖塞音
+    {"n", "n"},      // 舌尖鼻音
+    {"l", "l"},      // 舌尖边音
+    
+    // 舌根音
+    {"g", "k"},      // 清不送气舌根塞音
+    {"k", "kʰ"},     // 清送气舌根塞音
+    {"h", "x"},      // 清软腭擦音（注意：不是 ɕ！）
+    
+    // 舌面音
+    {"j", "tɕ"},     // 清不送气舌面塞擦音
+    {"q", "tɕʰ"},    // 清送气舌面塞擦音
+    {"x", "ɕ"},      // 清舌面擦音（注意：与 h 不同！）
+    
+    // 舌尖后音（卷舌音）
+    {"zh", "ʈʂ"},    // 清不送气卷舌塞擦音
+    {"ch", "ʈʂʰ"},   // 清送气卷舌塞擦音
+    {"sh", "ʂ"},     // 清卷舌擦音
+    {"r", "ʐ"},      // 浊卷舌擦音
+    
+    // 舌尖前音
+    {"z", "ts"},     // 清不送气舌尖塞擦音
+    {"c", "tsʰ"},    // 清送气舌尖塞擦音
+    {"s", "s"},      // 清舌尖擦音
+    
     {NULL, NULL}
 };
 
-// 韵母映射
+// 韵母映射（39 个基本韵母）
 static const PinyinIPAMap finals_map[] = {
-    // 单韵母
-    {"a", "ɑ"},
-    {"o", "o"},
-    {"e", "ɤ"},
-    {"i", "i"},
-    {"u", "u"},
-    {"ü", "y"},
-    {"v", "y"},  // ü 的另一种写法
+    // ===== 单韵母 (7个) =====
+    {"a", "ɑ"},       // 开后不圆唇元音
+    {"o", "o"},       // 半闭后圆唇元音
+    {"e", "ɤ"},       // 半闭后不圆唇元音
+    {"i", "i"},       // 闭前不圆唇元音
+    {"u", "u"},       // 闭后圆唇元音
+    {"ü", "y"},       // 闭前圆唇元音
+    {"v", "y"},       // ü 的另一种写法
     
-    // 复韵母
-    {"ai", "aɪ"},
-    {"ei", "eɪ"},
-    {"ui", "ueɪ"},
-    {"ao", "ɑʊ"},
-    {"ou", "oʊ"},
-    {"iu", "iʊ"},
-    {"ie", "iɛ"},
-    {"üe", "yɛ"},
-    {"ve", "yɛ"},
-    {"er", "ɚ"},
+    // ===== 复韵母 (13个) =====
+    {"ai", "aɪ"},     // 开前复合元音
+    {"ei", "eɪ"},     // 半闭前复合元音
+    {"ui", "ueɪ"},    // uei 的简写（hui, dui, tui 等）
+    {"ao", "ɑʊ"},     // 开后复合元音
+    {"ou", "ɤʊ"},     // 半闭后复合元音（注意：不是 oʊ）
+    {"iu", "iɤʊ"},    // iou 的简写（liu, niu 等）
+    {"ie", "iɛ"},     // 前展复合元音
+    {"üe", "yɛ"},     // 前圆复合元音
+    {"ve", "yɛ"},     // üe 的另一种写法
+    {"er", "ɚ"},      // 卷舌元音（特殊韵母）
     
-    // 鼻韵母
-    {"an", "an"},
-    {"en", "ən"},
-    {"in", "in"},
-    {"un", "un"},
-    {"ün", "yn"},
-    {"vn", "yn"},
-    {"ang", "ɑŋ"},
-    {"eng", "əŋ"},
-    {"ing", "iŋ"},
-    {"ong", "ʊŋ"},
+    // ===== 前鼻韵母 (9个) =====
+    {"an", "an"},     // 开后鼻尾韵
+    {"en", "ən"},     // 半开央鼻尾韵
+    {"in", "in"},     // 闭前鼻尾韵
+    {"un", "uən"},    // uen 的简写（gun, kun, hun 等）
+    {"ün", "yn"},     // 闭前圆唇鼻尾韵
+    {"vn", "yn"},     // ün 的另一种写法
+    {"ian", "iɛn"},   // 前展鼻尾韵（注意：用 ɛ 而非 a）
+    {"uan", "uan"},   // 后圆鼻尾韵
+    {"üan", "yɛn"},   // 前圆鼻尾韵（与 ian 保持一致性）
     
-    // 特殊韵母（含介音）
-    {"ia", "iɑ"},
-    {"iao", "iɑʊ"},
-    {"ian", "iɛn"},
-    {"iang", "iɑŋ"},
-    {"iong", "iʊŋ"},
-    {"ua", "uɑ"},
-    {"uo", "uo"},
-    {"uai", "uaɪ"},
-    {"uan", "uan"},
-    {"uang", "uɑŋ"},
+    // ===== 后鼻韵母 (9个) =====
+    {"ang", "ɑŋ"},    // 开后鼻尾韵
+    {"eng", "ɤŋ"},    // 半闭后鼻尾韵（注意：不是 əŋ）
+    {"ing", "iŋ"},    // 闭前鼻尾韵
+    {"ong", "ʊŋ"},    // 半闭后圆唇鼻尾韵
+    {"iang", "iɑŋ"},  // 前展后鼻韵
+    {"iong", "iʊŋ"},  // 前展后圆鼻韵
+    {"uang", "uɑŋ"},  // 后圆后鼻韵
+    {"ueng", "uɤŋ"},  // ⭐ weng 的韵母形式（重要！）
     
-    // ⭐ 修复：y- 和 w- 开头的韵母（零声母）
-    // 这些在汉语拼音中是零声母 + 韵母的组合
-    {"yi", "i"},      // 衣 yi → i
-    {"ya", "iɑ"},     // 呀 ya → ia
-    {"yao", "iɑʊ"},   // 腰 yao → iao
-    {"yan", "iɛn"},   // 烟 yan → ian
-    {"yang", "iɑŋ"},  // 央 yang → iang
-    {"ye", "iɛ"},     // 耶 ye → ie
-    {"yong", "iʊŋ"},  // 雍 yong → iong
-    {"you", "iʊ"},    // 优 you → iu
-    {"yin", "in"},    // 因 yin → in
-    {"ying", "iŋ"},   // 英 ying → ing
-    
-    // ⭐ 修复：yu 系列（关键！）
-    {"yu", "y"},      // 余/鱼 yu → ü (IPA: y)
-    {"yue", "yɛ"},    // 月 yue → üe
-    {"yuan", "yan"},  // 元 yuan → üan (IPA: yan)
-    {"yun", "yn"},    // 云 yun → ün
-    
-    // w- 开头的韵母
-    {"wu", "u"},      // 乌 wu → u
-    {"wa", "uɑ"},     // 蛙 wa → ua
-    {"wai", "uaɪ"},   // 歪 wai → uai
-    {"wan", "uan"},   // 弯 wan → uan
-    {"wang", "uɑŋ"},  // 汪 wang → uang
-    {"wo", "uo"},     // 窝 wo → uo
-    {"wei", "ueɪ"},   // 威 wei → ui
-    {"wen", "un"},    // 温 wen → un
-    {"weng", "uəŋ"},  // 翁 weng → ueng
+    // ===== 其他复合韵母 (5个) =====
+    {"ia", "iɑ"},     // 前展复合韵
+    {"iao", "iɑʊ"},   // 前展后圆复合韵
+    {"ua", "uɑ"},     // 后圆复合韵
+    {"uo", "uo"},     // 后圆复合韵
+    {"uai", "uaɪ"},   // 后圆前展复合韵
     
     {NULL, NULL}
 };
@@ -261,6 +253,11 @@ static const char* find_final_ipa(const char *final) {
 /**
  * 分离声母和韵母
  * 
+ * 处理汉语拼音的声韵母拆分，需要特别注意：
+ * 1. y-/w- 开头的拼音是零声母音节（如 yu, wu, yi, wa）
+ * 2. 这些音节在拼音中写作 y-/w-，但实际是韵母的拼写变体
+ * 3. 例如：yu = 零声母 + ü，而不是声母 y + 韵母 u
+ * 
  * @param pinyin 拼音（不带声调数字）
  * @param initial 输出：声母
  * @param final 输出：韵母
@@ -273,11 +270,115 @@ static void split_initial_final(const char *pinyin, char *initial, char *final) 
         return;
     }
     
-    // ⭐ 修复：优先检查是否整个拼音就是一个韵母（y- 和 w- 开头的情况）
-    // 这些是零声母 + 韵母的组合，不应该被拆分
-    if (find_final_ipa(pinyin)) {
-        strcpy(final, pinyin);
-        return;
+    // ⭐ 关键修复：处理 y- 开头的拼音（零声母音节）
+    if (pinyin[0] == 'y') {
+        // yu 系列：yu, yue, yuan, yun → ü, üe, üan, ün
+        if (strcmp(pinyin, "yu") == 0) {
+            strcpy(final, "ü");
+            return;
+        }
+        if (strcmp(pinyin, "yue") == 0) {
+            strcpy(final, "üe");
+            return;
+        }
+        if (strcmp(pinyin, "yuan") == 0) {
+            strcpy(final, "üan");
+            return;
+        }
+        if (strcmp(pinyin, "yun") == 0) {
+            strcpy(final, "ün");
+            return;
+        }
+        // yi 系列：yi, ya, yao, yan, yang, ye, yong, you, yin, ying
+        if (strcmp(pinyin, "yi") == 0) {
+            strcpy(final, "i");
+            return;
+        }
+        if (strcmp(pinyin, "ya") == 0) {
+            strcpy(final, "ia");
+            return;
+        }
+        if (strcmp(pinyin, "yao") == 0) {
+            strcpy(final, "iao");
+            return;
+        }
+        if (strcmp(pinyin, "yan") == 0) {
+            strcpy(final, "ian");
+            return;
+        }
+        if (strcmp(pinyin, "yang") == 0) {
+            strcpy(final, "iang");
+            return;
+        }
+        if (strcmp(pinyin, "ye") == 0) {
+            strcpy(final, "ie");
+            return;
+        }
+        if (strcmp(pinyin, "yong") == 0) {
+            strcpy(final, "iong");
+            return;
+        }
+        if (strcmp(pinyin, "you") == 0) {
+            strcpy(final, "iu");
+            return;
+        }
+        if (strcmp(pinyin, "yin") == 0) {
+            strcpy(final, "in");
+            return;
+        }
+        if (strcmp(pinyin, "ying") == 0) {
+            strcpy(final, "ing");
+            return;
+        }
+    }
+    
+    // ⭐ 处理 w- 开头的拼音（零声母 + u 系列韵母）
+    if (pinyin[0] == 'w') {
+        // wu → u
+        if (strcmp(pinyin, "wu") == 0) {
+            strcpy(final, "u");
+            return;
+        }
+        // wa → ua
+        if (strcmp(pinyin, "wa") == 0) {
+            strcpy(final, "ua");
+            return;
+        }
+        // wai → uai
+        if (strcmp(pinyin, "wai") == 0) {
+            strcpy(final, "uai");
+            return;
+        }
+        // wan → uan
+        if (strcmp(pinyin, "wan") == 0) {
+            strcpy(final, "uan");
+            return;
+        }
+        // wang → uang
+        if (strcmp(pinyin, "wang") == 0) {
+            strcpy(final, "uang");
+            return;
+        }
+        // wo → uo
+        if (strcmp(pinyin, "wo") == 0) {
+            strcpy(final, "uo");
+            return;
+        }
+        // wei → ui
+        if (strcmp(pinyin, "wei") == 0) {
+            strcpy(final, "ui");
+            return;
+        }
+        // wen → un
+        if (strcmp(pinyin, "wen") == 0) {
+            strcpy(final, "un");
+            return;
+        }
+        // weng → ueng
+        if (strcmp(pinyin, "weng") == 0) {
+            strcpy(final, "ueng");
+            return;
+        }
     }
     
     // 尝试匹配两字母声母（zh, ch, sh）
@@ -298,8 +399,16 @@ static void split_initial_final(const char *pinyin, char *initial, char *final) 
         return;
     }
     
-    // 无声母，全部作为韵母
+    // 无声母，全部作为韵母（零声母音节）
     strcpy(final, pinyin);
+    
+    // ⭐ 边界情况：验证韵母是否存在于映射表中
+    if (!find_final_ipa(final)) {
+        // 警告：未识别的拼音（可能是拼写错误或方言）
+        // 注意：这不会终止程序，只是记录警告
+        // 实际应用中可能需要日志系统
+        fprintf(stderr, "[G2P Warning] Unrecognized pinyin: %s (final: %s)\n", pinyin, final);
+    }
 }
 
 /* ============================================================================
@@ -330,17 +439,30 @@ char* misaki_zh_pinyin_to_ipa(const char *pinyin) {
     
     if (!final_ipa) {
         // 未找到韵母映射，返回原拼音
+        fprintf(stderr, "[G2P Error] No IPA mapping found for final: %s (pinyin: %s)\n", final, pinyin);
         return misaki_strdup(pinyin);
     }
     
+    // ⭐ 内存安全：先计算需要的缓冲区大小
+    const char *tone_mark = (tone >= 0 && tone <= 5) ? tone_marks[tone] : "";
+    int needed = snprintf(NULL, 0, "%s%s%s",
+                         initial_ipa ? initial_ipa : "",
+                         final_ipa,
+                         tone_mark);
+    
+    // 分配足够的内存
+    char *result = (char*)malloc(needed + 1);
+    if (!result) {
+        return NULL;
+    }
+    
     // 组合：声母 + 韵母 + 声调
-    char result[128];
-    snprintf(result, sizeof(result), "%s%s%s",
+    snprintf(result, needed + 1, "%s%s%s",
              initial_ipa ? initial_ipa : "",
              final_ipa,
-             (tone >= 0 && tone <= 5) ? tone_marks[tone] : "");
+             tone_mark);
     
-    return misaki_strdup(result);
+    return result;
 }
 
 /* ============================================================================

@@ -369,18 +369,27 @@ def batch_test(engine, output_dir="batch_output"):
         py_audio = engine.synthesize(py_phonemes)
         
         # 5. 保存音频
-        c_filename = output_path / f"{idx:02d}_c_{text[:10]}.wav"
-        py_filename = output_path / f"{idx:02d}_py_{text[:10]}.wav"
+        c_filename = output_path / f"{idx:03d}_c_{text[:10]}.wav"
+        py_filename = output_path / f"{idx:03d}_py_{text[:10]}.wav"
         
         sf.write(str(c_filename), c_audio, 24000)
         sf.write(str(py_filename), py_audio, 24000)
         
-        print(f"   💾 已保存: {c_filename.name} / {py_filename.name}\n")
+        # 6. 保存音素日志（每个用例一个独立文件）
+        log_filename = output_path / f"{idx:03d}_phonemes.txt"
+        with open(log_filename, 'w', encoding='utf-8') as log:
+            log.write(f"输入文本: {text}\n")
+            log.write(f"C版本音素: {c_phonemes}\n")
+            log.write(f"Python版本音素: {py_phonemes}\n")
+        
+        print(f"   💾 已保存: {c_filename.name} / {py_filename.name}")
+        print(f"   📝 音素日志: {log_filename.name}\n")
     
     print("="*70)
     print(f"✅ 批量测试完成！")
     print(f"📁 输出目录: {output_path.absolute()}")
     print(f"🎵 共生成: {len(TEST_SENTENCES) * 2} 个音频文件")
+    print(f"📝 共生成: {len(TEST_SENTENCES)} 个音素日志文件")
     print("="*70)
 
 

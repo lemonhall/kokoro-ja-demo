@@ -525,8 +525,8 @@ ZhPhraseDict* misaki_zh_phrase_dict_load(const char *file_path) {
     // 逐行读取：词<Tab>拼音
     char line[1024];
     while (fgets(line, sizeof(line), f)) {
-        // 移除换行符
-        line[strcspn(line, "\n")] = 0;
+        // 移除换行符（同时处理 \r\n 和 \n）
+        line[strcspn(line, "\r\n")] = 0;
         
         // 查找 Tab 分隔符
         char *tab = strchr(line, '\t');

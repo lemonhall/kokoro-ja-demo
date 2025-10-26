@@ -123,3 +123,7 @@ message(STATUS "C Compiler: ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
 message(STATUS "==============================================")
 add_executable(test_lookup_debug tests/test_lookup_debug.c)
 target_link_libraries(test_lookup_debug misaki_static m)
+
+# 中文大词典测试
+add_executable(test_zh_full_dict tests/test_zh_full_dict.c)
+target_link_libraries(test_zh_full_dict misaki_static m)

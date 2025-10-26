@@ -71,15 +71,33 @@ bool init_app(MisakiApp *app, const char *data_dir) {
     }
     
     // 3. 加载中文词汇词典（用于分词）
+    // 优先使用大词典 dict_full.txt，如果不存在则使用 dict.txt
     if (app->zh_dict) {
         char zh_word_dict_path[512];
-        snprintf(zh_word_dict_path, sizeof(zh_word_dict_path), "%s/zh/dict.txt", data_dir);
-        printf("📖 加载中文词汇词典: %s\n", zh_word_dict_path);
+        char zh_word_dict_full_path[512];
+        
+        // 尝试加载大词典
+        snprintf(zh_word_dict_full_path, sizeof(zh_word_dict_full_path), 
+                 "%s/zh/dict_full.txt", data_dir);
+        snprintf(zh_word_dict_path, sizeof(zh_word_dict_path), 
+                 "%s/zh/dict.txt", data_dir);
+        
+        // 检查大词典是否存在
+        FILE *test_file = fopen(zh_word_dict_full_path, "r");
+        bool use_full_dict = (test_file != NULL);
+        if (test_file) {
+            fclose(test_file);
+        }
+        
+        const char *selected_dict = use_full_dict ? zh_word_dict_full_path : zh_word_dict_path;
+        const char *dict_type = use_full_dict ? "大词典" : "基础词典";
+        
+        printf("📖 加载中文词汇词典 (%s): %s\n", dict_type, selected_dict);
         
         app->zh_trie = misaki_trie_create();
-        int word_count = misaki_trie_load_from_file(app->zh_trie, zh_word_dict_path, "word freq");
+        int word_count = misaki_trie_load_from_file(app->zh_trie, selected_dict, "word freq");
         if (word_count > 0) {
-            printf("   ✅ 成功加载 %d 个中文词汇\n", word_count);
+            printf("   ✅ 成功加载 %d 个中文词汇 [%s]\n", word_count, dict_type);
             
             // 创建中文分词器
             ZhTokenizerConfig config = {

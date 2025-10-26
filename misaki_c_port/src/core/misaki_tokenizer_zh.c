@@ -141,14 +141,17 @@ static bool calculate_route(const DAG *dag, const Trie *trie,
                 
                 // 查询词频
                 TrieMatch match;
-                double freq = 0.5;  // 默认频率（单字）
+                double freq = 1.0;  // 默认频率（单字）
+                int word_char_len = next_pos - i;  // 词长（字符数）
                 
                 if (misaki_trie_match_longest(trie, text, byte_start, &match)) {
                     freq = match.frequency > 0 ? match.frequency : 1.0;
                 }
                 
-                // 计算分数：log(freq) + dp[next_pos]
-                double word_score = log(freq);
+                // ⭐ 优化：计算分数 = log(freq) + 词长奖励 + dp[next_pos]
+                // 词长奖励：越长的词得分越高，避免过度切分
+                // 系数 15.0 经过调优，可以根据效果调整
+                double word_score = log(freq) + (word_char_len - 1) * 15.0;
                 double total_score = word_score + dp[next_pos];
                 
                 if (total_score > max_score) {

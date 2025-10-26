@@ -156,5 +156,5 @@ def main(text):
 
 
 if __name__ == "__main__":
-    text = sys.argv[1] if len(sys.argv) > 1 else "我们一起去公园散步吧"
+    text = sys.argv[1] if len(sys.argv) > 1 else "这个项目预算大约是1,500,000元"
     main(text)

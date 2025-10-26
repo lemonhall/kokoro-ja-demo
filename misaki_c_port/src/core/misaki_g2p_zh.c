@@ -80,7 +80,7 @@ static const PinyinIPAMap finals_map[] = {
     {"a", "ɑ"},       // 开后不圆唇元音
     {"o", "o"},       // 半闭后圆唇元音
     {"e", "ɤ"},       // 半闭后不圆唇元音
-    {"i", "i"},       // 闭前不圆唇元音
+    {"i", "i"},       // 闭前不圆唇元音（注意：zhi/chi/shi/ri 和 zi/ci/si 中的 i 需特殊处理）
     {"u", "u"},       // 闭后圆唇元音
     {"ü", "y"},       // 闭前圆唇元音
     {"v", "y"},       // ü 的另一种写法
@@ -125,6 +125,9 @@ static const PinyinIPAMap finals_map[] = {
     {"ua", "uɑ"},     // 后圆复合韵
     {"uo", "uo"},     // 后圆复合韵
     {"uai", "uaɪ"},   // 后圆前展复合韵
+    
+    // ===== 特殊空韵（卷舌/平舌音后的 i）=====
+    {"_zcs_i", "ɨ"},  // ⭐ zhi/chi/shi/ri 和 zi/ci/si 中的空韵
     
     {NULL, NULL}
 };
@@ -259,6 +262,7 @@ static const char* find_final_ipa(const char *final) {
  * 1. y-/w- 开头的拼音是零声母音节（如 yu, wu, yi, wa）
  * 2. 这些音节在拼音中写作 y-/w-，但实际是韵母的拼写变体
  * 3. 例如：yu = 零声母 + ü，而不是声母 y + 韵母 u
+ * 4. ⭐ 卷舌音 zh/ch/sh/r 和平舌音 z/c/s 后的 "i" 是空韵（只发声母）
  * 
  * @param pinyin 拼音（不带声调数字）
  * @param initial 输出：声母
@@ -389,6 +393,15 @@ static void split_initial_final(const char *pinyin, char *initial, char *final) 
         if (find_initial_ipa(two_char)) {
             strcpy(initial, two_char);
             strcpy(final, pinyin + 2);
+            
+            // ⭐ 特殊处理：zhi/chi/shi/ri 和 zi/ci/si 中的 "i" 是空韵（卷舌/平舌元音）
+            // 这些音节只发声母，韵母 "i" 需要替换为特殊符号
+            if (strcmp(final, "i") == 0) {
+                if (strcmp(two_char, "zh") == 0 || strcmp(two_char, "ch") == 0 || strcmp(two_char, "sh") == 0) {
+                    // zhi/chi/shi 的 "i" 是卷舌元音 [ɨ]
+                    strcpy(final, "_zcs_i");  // 标记特殊韵母
+                }
+            }
             return;
         }
     }
@@ -398,6 +411,17 @@ static void split_initial_final(const char *pinyin, char *initial, char *final) 
     if (find_initial_ipa(one_char)) {
         strcpy(initial, one_char);
         strcpy(final, pinyin + 1);
+        
+        // ⭐ 特殊处理：ri 中的 "i" 是空韵
+        if (strcmp(final, "i") == 0 && strcmp(one_char, "r") == 0) {
+            strcpy(final, "_zcs_i");
+        }
+        // ⭐ 特殊处理：zi/ci/si 中的 "i" 是平舌元音 [ɿ]
+        if (strcmp(final, "i") == 0) {
+            if (strcmp(one_char, "z") == 0 || strcmp(one_char, "c") == 0 || strcmp(one_char, "s") == 0) {
+                strcpy(final, "_zcs_i");
+            }
+        }
         return;
     }
     

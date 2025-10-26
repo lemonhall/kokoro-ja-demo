@@ -13,6 +13,29 @@
 #include <ctype.h>
 
 /* ============================================================================
+ * 兼容性实现（Windows/MinGW）
+ * ========================================================================== */
+
+#if defined(_WIN32) || defined(__MINGW32__) || defined(__MINGW64__)
+/**
+ * MinGW 版本的 strndup 实现
+ */
+char* misaki_strndup(const char* s, size_t n) {
+    if (!s) return NULL;
+    
+    size_t len = strlen(s);
+    if (n < len) len = n;
+    
+    char* result = (char*)malloc(len + 1);
+    if (!result) return NULL;
+    
+    memcpy(result, s, len);
+    result[len] = '\0';
+    return result;
+}
+#endif
+
+/* ============================================================================
  * UTF-8 字符解码/编码
  * ========================================================================== */
 

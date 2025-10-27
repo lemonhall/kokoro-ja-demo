@@ -119,6 +119,24 @@ static const LangFeatureWord EN_FEATURES[] = {
     {NULL, LANG_UNKNOWN, 0.0}
 };
 
+// 昆雅语特征词
+static const LangFeatureWord QYA_FEATURES[] = {
+    // 常见昆雅语词汇
+    {"quenya", LANG_QUENYA, 10.0},
+    {"eldar", LANG_QUENYA, 9.0},
+    {"valar", LANG_QUENYA, 9.0},
+    {"arda", LANG_QUENYA, 8.0},
+    {"silmarillion", LANG_QUENYA, 9.0},
+    
+    // 常见后缀
+    {"ion", LANG_QUENYA, 5.0},
+    {"iel", LANG_QUENYA, 5.0},
+    {"wen", LANG_QUENYA, 4.0},
+    {"ndil", LANG_QUENYA, 6.0},
+    
+    {NULL, LANG_UNKNOWN, 0.0}
+};
+
 // 日文常见2-gram
 static const char *JP_BIGRAMS[] = {
     "です", "ます", "した", "して", "こと", "もの", "よう", "たい",
@@ -191,6 +209,17 @@ static bool is_latin(uint32_t codepoint) {
  */
 static bool is_digit(uint32_t codepoint) {
     return (codepoint >= '0' && codepoint <= '9');
+}
+
+/**
+ * 判断是否为昆雅语特殊字符
+ */
+static bool is_quenya_special(uint32_t codepoint) {
+    // ñ (U+00F1), þ (U+00FE), á, é, í, ó, ú, ë
+    return (codepoint == 0x00F1 || codepoint == 0x00FE ||
+            codepoint == 0x00E1 || codepoint == 0x00E9 ||
+            codepoint == 0x00ED || codepoint == 0x00F3 ||
+            codepoint == 0x00FA || codepoint == 0x00EB);
 }
 
 /**
@@ -445,17 +474,38 @@ MisakiLanguage misaki_lang_detect_quick(const char *text) {
         return LANG_JAPANESE;
     }
     
-    // 规刱2：纯拉丁字母 → 英文
+    // 规刱2：检测昆雅语特殊字符（ñ, þ, 长音符等）
+    const unsigned char *p = (const unsigned char *)text;
+    int quenya_special_count = 0;
+    while (*p) {
+        uint32_t codepoint = 0;
+        int len = misaki_utf8_decode(p, &codepoint);
+        if (len > 0) {
+            if (is_quenya_special(codepoint)) {
+                quenya_special_count++;
+            }
+            p += len;
+        } else {
+            p++;
+        }
+    }
+    
+    // 如果有昆雅语特殊字符，且主要是拉丁字母
+    if (quenya_special_count > 0 && stats.latin_count > stats.total_chars * 0.5f) {
+        return LANG_QUENYA;
+    }
+    
+    // 规刱3：纯拉丁字母 → 英文
     if (stats.latin_count > stats.total_chars * 0.7f) {
         return LANG_ENGLISH;
     }
     
-    // 规刱3：韩文
+    // 规刱4：韩文
     if (stats.hangul_count > 0) {
         return LANG_KOREAN;
     }
     
-    // 规刱4：纯汉字 → 需要进一步判断
+    // 规刱5：纯汉字 → 需要进一步判断
     if (stats.kanji_count > 0) {
         // 检查日文特征
         if (misaki_has_japanese_features(text)) {
@@ -588,6 +638,7 @@ const char* misaki_language_name(MisakiLanguage lang) {
         case LANG_ENGLISH:    return "英文";
         case LANG_VIETNAMESE: return "越南语";
         case LANG_KOREAN:     return "韩语";
+        case LANG_QUENYA:     return "昆雅语";
         default:              return "未知";
     }
 }

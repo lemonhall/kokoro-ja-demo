@@ -38,11 +38,13 @@ set(MISAKI_SOURCES
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_zh.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_en.c
     ${MISAKI_SRC_DIR}/core/misaki_tokenizer_ja.c
+    ${MISAKI_SRC_DIR}/core/misaki_tokenizer_qya.c  # 新增：昆雅语分词器
     ${MISAKI_SRC_DIR}/core/misaki_transition_rules.c  # 新增：词性转移规则
     ${MISAKI_SRC_DIR}/core/misaki_g2p.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_zh.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_en.c
     ${MISAKI_SRC_DIR}/core/misaki_g2p_ja.c
+    ${MISAKI_SRC_DIR}/core/misaki_g2p_qya.c  # 新增：昆雅语 G2P
     ${MISAKI_SRC_DIR}/core/misaki_kana_map.c
     ${MISAKI_SRC_DIR}/core/misaki_lang_detect.c  # 新增：语言检测模块
     ${MISAKI_SRC_DIR}/api/misaki_api.c  # 新增：导出 API
@@ -164,3 +166,15 @@ target_link_libraries(test_hmm misaki_static m)
 # 语言检测模块测试
 add_executable(test_lang_detect tests/test_lang_detect.c)
 target_link_libraries(test_lang_detect misaki_static m)
+
+# 昆雅语分词器测试
+add_executable(test_tokenizer_qya tests/test_tokenizer_qya.c)
+target_link_libraries(test_tokenizer_qya misaki_static m)
+
+# 昆雅语 G2P 测试
+add_executable(test_g2p_qya tests/test_g2p_qya.c)
+target_link_libraries(test_g2p_qya misaki_static m)
+
+# 昆雅语演示程序
+add_executable(demo_quenya demo_quenya.c)
+target_link_libraries(demo_quenya misaki_static m)

@@ -151,12 +151,23 @@ typedef struct {
  * ========================================================================== */
 
 /**
+ * Token 类型枚举
+ */
+typedef enum {
+    TOKEN_WORD,          // 词汇
+    TOKEN_NUM,           // 数字
+    TOKEN_PUNCT,         // 标点符号
+    TOKEN_UNKNOWN        // 未知类型
+} MisakiTokenType;
+
+/**
  * Token: 分词后的词单元
  * 
  * 用于所有语言的分词结果
  */
 typedef struct {
     char *text;          // 原始文本（UTF-8）
+    MisakiTokenType type; // Token类型
     char *tag;           // 词性标签（POS tag，如 "n" = 名词）
     char *phonemes;      // 音素序列（IPA 或拼音）
     char *whitespace;    // 后续空白字符
@@ -235,6 +246,7 @@ typedef enum {
     LANG_JAPANESE,
     LANG_KOREAN,
     LANG_VIETNAMESE,
+    LANG_QUENYA,      // 昆雅语（精灵语）
     LANG_UNKNOWN
 } MisakiLanguage;
 

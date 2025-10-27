@@ -13,6 +13,8 @@
 #include "misaki_trie.h"
 #include "misaki_hmm.h"
 #include "misaki_lang_detect.h"
+#include "misaki_g2p_qya.h"      // 昆雅语 G2P
+#include "misaki_tokenizer_qya.h" // 昆雅语分词器
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -100,6 +102,10 @@ MISAKI_API int misaki_init(const char *data_dir) {
         .ja_tokenizer = g_misaki.ja_tokenizer
     };
     g_misaki.lang_detector = misaki_lang_detector_create(&detector_config);
+    
+    // 5. 初始化昆雅语 G2P（无需词典）
+    misaki_g2p_qya_init();
+    misaki_tokenizer_qya_init();
     
     g_misaki.initialized = true;
     return 0;
@@ -204,6 +210,8 @@ MISAKI_API int misaki_text_to_phonemes_lang(
         detected_lang = LANG_CHINESE;
     } else if (strcmp(lang, "en") == 0) {
         detected_lang = LANG_ENGLISH;
+    } else if (strcmp(lang, "qya") == 0 || strcmp(lang, "quenya") == 0) {
+        detected_lang = LANG_QUENYA;
     } else {
         return -1;
     }
@@ -229,6 +237,20 @@ MISAKI_API int misaki_text_to_phonemes_lang(
         case LANG_JAPANESE:
             if (g_misaki.ja_tokenizer && g_misaki.ja_trie) {
                 tokens = misaki_ja_g2p(g_misaki.ja_trie, g_misaki.ja_tokenizer, text, &options);
+            }
+            break;
+            
+        case LANG_QUENYA:
+            {
+                // 昆雅语特殊处理：直接调用 G2P，不需要词典
+                char* phonemes_str = NULL;
+                if (misaki_g2p_qya_convert(text, &phonemes_str) == 0 && phonemes_str) {
+                    strncpy(output_buffer, phonemes_str, buffer_size - 1);
+                    output_buffer[buffer_size - 1] = '\0';
+                    free(phonemes_str);
+                    return 0;
+                }
+                return -1;
             }
             break;
             
@@ -289,6 +311,10 @@ MISAKI_API void misaki_cleanup(void) {
     if (g_misaki.lang_detector) {
         misaki_lang_detector_free(g_misaki.lang_detector);
     }
+    
+    // 清理昆雅语 G2P
+    misaki_g2p_qya_cleanup();
+    misaki_tokenizer_qya_cleanup();
     
     memset(&g_misaki, 0, sizeof(g_misaki));
 }

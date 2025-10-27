@@ -1,0 +1,62 @@
+$	đô la
+%	phần trăm
+&	và
+*	sao
++	cộng
+/	xuyệt
+:	hai chấm
+<	nhỏ hơn
+<>	khác
+=	bằng
+>	lớn hơn
+@	a còng
+^	mũ
+£	bảng
+¥	yên
+©	bản quyền
+¬	phủ định
+±	cộng trừ
+×	nhân
+÷	chia
+Ω	ôm
+α	an pha
+β	bê ta
+γ	ga ma
+δ	đen ta
+ε	ép si lon
+ζ	de ta
+η	ê ta
+θ	thê ta
+ι	i ô ta
+κ	cáp ba
+λ	lam đa
+μ	muy
+ν	nu
+ξ	xi xi
+ο	o mi ron
+π	pi
+ρ	ro
+σ	xích ma
+τ	tao
+υ	úp si lon
+φ	phi
+χ	chi
+ψ	si
+ω	ô me ga
+ϵ	thuộc
+฿	bạc
+ᴧ	và
+₩	won
+€	ê rô
+₭	kíp
+₱	bê xô
+∀	với mọi
+∏	tích
+∑	tổng
+∞	vô cùng
+∩	giao
+∪	hội
+≈	tương đương
+≠	khác
+≤	nhỏ hơn hoặc bằng
+≥	lớn hơn hoặc bằng
